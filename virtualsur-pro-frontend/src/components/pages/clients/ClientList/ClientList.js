@@ -2,13 +2,23 @@ import React from 'react';
 import './ClientList.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
+
+
 
 function ClientList() {
+
+  const navigate = useNavigate();
+
+  const handleAddClientClick = () => {
+    navigate('/clientes/nuevo');
+  };
+
   return (
     <div className="client-list">
       <div className="client-list-header">
         <h1>Listado de Clientes</h1>
-        <button className="new-client-button">
+        <button className="new-client-button" onClick={handleAddClientClick}>
           <FontAwesomeIcon icon={faPlus} /> Nuevo Cliente
         </button>
       </div>
