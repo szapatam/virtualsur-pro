@@ -1,0 +1,83 @@
+.client-list {
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-radius: 5px;
+  }
+  
+  .client-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .new-client-button {
+    background-color: #ff4040;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  
+  .new-client-button:hover {
+    background-color: #e63535;
+  }
+  
+  .client-search {
+    margin-bottom: 20px;
+  }
+  
+  .client-search label {
+    margin-right: 10px;
+    font-weight: bold;
+  }
+  
+  .client-search input {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .client-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+  }
+  
+  .client-table th, .client-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .client-table th {
+    background-color: #333;
+    color: white;
+  }
+  
+  .action-button {
+    margin-right: 10px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .action-button.edit {
+    background-color: #ff4040;
+    color: white;
+  }
+  
+  .action-button.delete {
+    background-color: #333;
+    color: white;
+  }
+  
+  .action-button:hover {
+    opacity: 0.8;
+  }
+  

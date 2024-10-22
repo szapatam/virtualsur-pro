@@ -1,0 +1,19 @@
+/* src/components/Layout/Layout.css */
+.layout {
+    display: flex;
+  }
+  
+.main-content {
+  margin-left: 290px; /* Espacio para la barra lateral */
+  margin-top: 60px;   /* Espacio para la barra superior */
+  padding: 20px;
+  width: calc(100% - 250px);
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+  transition: margin 0.3s ease, width 0.3s ease;
+}
+
+.main-content.full-width {  
+  margin-left: 0;
+  width: 100%;
+}
