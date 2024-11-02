@@ -37,7 +37,7 @@ function Sidebar({isVisible}) {
             </a>
             <ul>
               <li><Link to="/clientes">Listado de Clientes</Link></li>
-              <li><a href="#list-personnel">Listado de Personal</a></li>
+              <li><a href="/personal">Listado de Personal</a></li>
             </ul>
           </li>
           <li>

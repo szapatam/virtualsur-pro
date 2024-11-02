@@ -1,0 +1,112 @@
+/* src/pages/staff/StaffList/StaffList.css */
+.staff-list-container {
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  
+  .staff-list-container h2 {
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .staff-header { /* CAMBIO!! */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .staff-search {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .staff-search label {
+    margin-right: 10px;
+    font-weight: bold;
+  }
+  
+  .staff-search input {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-right: 10px;
+  }
+  
+  .role-filter {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .staff-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background-color: #ffffff;
+  }
+
+  .staff-table th {
+    background-color: #333;
+    color: white;
+  }
+  
+  .staff-table th, .staff-table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .view-button, .edit-button, .delete-button {
+    padding: 10px;
+    font-size: 0.9em;
+    margin-right: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .view-button {
+    background-color: #ff4040;
+    color: white;
+  }
+  
+  .edit-button {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .delete-button {
+    background-color: #333;
+    color: white;
+  }
+  
+  .view-button:hover {
+    background-color: #e63946;
+  }
+  
+  .edit-button:hover {
+    background-color: #0069d9;
+  }
+  
+  .delete-button:hover {
+    background-color: #000;
+  }
+  
+  .new-staff-button {
+    padding: 15px;
+    background-color: #ff4040;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-left: auto;
+  }
+  
+  .new-staff-button:hover {
+    background-color: #e63946;
+  }
+  
