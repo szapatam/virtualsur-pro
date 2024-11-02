@@ -14,6 +14,10 @@ function ClientList() {
     navigate('/clientes/nuevo');
   };
 
+  const handleViewClientClick = (clientId) =>{
+    navigate(`/clientes/${clientId}`);
+  }
+
   return (
     <div className="client-list">
       <div className="client-list-header">
@@ -42,7 +46,7 @@ function ClientList() {
             <td>Calle Falsa 123</td>
             <td>123456789</td>
             <td>
-              <button className="action-button edit">
+              <button onClick={() => handleViewClientClick(1)} className="action-button edit">
                 <FontAwesomeIcon icon={faEdit} /> Ver/Editar
               </button>
               <button className="action-button delete">
@@ -55,7 +59,7 @@ function ClientList() {
             <td>Avenida Falsedad 123</td>
             <td>987654321</td>
             <td>
-              <button className="action-button edit">
+              <button onClick={() => handleViewClientClick(2)} className="action-button edit">
                 <FontAwesomeIcon icon={faEdit} /> Ver/Editar
               </button>
               <button className="action-button delete">
