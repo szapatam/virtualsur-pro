@@ -7,6 +7,7 @@ import ClientList from './components/pages/clients/ClientList/ClientList'
 import ClientCreate from './components/pages/clients/ClientCreate/ClientCreate';
 import ClientDetail from './components/pages/clients/ClientDetails/ClientDetail';
 import StaffList from './components/pages/staff/StaffList/StaffList';
+import StaffCreate from './components/pages/staff/StaffCreate/StaffCreate';
 
 //ESTE COMENTARIO SERA UNA PRUEBA PARA FORK GIT
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/clientes/nuevo" element={<ClientCreate />} />
         <Route path="/clientes/:clienteId"  element={<ClientDetail />}/>
         <Route path="/personal"  element={<StaffList />}/>
+        <Route path="/personal/nuevo" element={<StaffCreate />} />
       </Routes>
     </Layout>
   );

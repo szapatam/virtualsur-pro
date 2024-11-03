@@ -32,7 +32,7 @@ function ClientCreate() {
     return (
         <div className="client-create-container">
             <div className='client-create-header'>
-                <h2>Ingresar Cliente</h2>
+                <h1>Ingresar Cliente</h1>
                 <button className="back-to-list-button" onClick={() => navigate('/clientes')}>
                     Volver al Listado
                 </button>
@@ -98,7 +98,10 @@ function ClientCreate() {
                         />
                     </div>
                 </fieldset>
+                <div className='save-button-container'>
                 <button type="submit" className="save-button">Guardar Cambios</button>
+                </div>
+                
             </form>
         </div>
     );

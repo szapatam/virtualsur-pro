@@ -11,7 +11,7 @@
     justify-content: space-between;
 }
 
-.client-create-container h2 {
+.client-create-container h1 {
     margin-bottom: 20px;
     color: #333;
 }
@@ -79,3 +79,8 @@ legend {
 .save-button:hover {
     background-color: #e63946;
 }
+
+.save-button-container {
+    display: flex;
+    justify-content: center;
+  }
