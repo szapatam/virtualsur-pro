@@ -33,6 +33,7 @@ function ClientDetail() {
     <div className="client-detail-container">
       <div className="client-detail-header">
         <h2>Detalle Cliente</h2>
+        <button className='back-to-list-button' onClick={() => navigate('/clientes')}>Volver al listado</button>
       </div>
       <div className="client-search">
         <label htmlFor="clientSearch">Seleccionar Cliente:</label>

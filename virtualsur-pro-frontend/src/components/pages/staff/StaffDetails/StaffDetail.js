@@ -34,6 +34,7 @@ function StaffDetail() {
         <div className="staff-detail-container">
             <div className="staff-detail-header">
                 <h2>Detalle Personal</h2>
+                <button className='back-to-list-button' onClick={() => navigate('/personal')} > Volver al listado</button>
             </div>
             <div className="staff-search">
                 <label htmlFor="staffSearch">Seleccionar Personal:</label>
