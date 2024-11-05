@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import './StaffList.css';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faPlus, faEdit, faTrash} from '@fortawesome/free-solid-svg-icons'
+import { faPlus, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons'
 
 function StaffList() {
   const navigate = useNavigate();
@@ -18,13 +18,17 @@ function StaffList() {
     navigate('/personal/nuevo');
   };
 
+  const handleViewStaffClick = (staffId) => {
+    navigate(`/personal/${staffId}`);
+  }
+
   return (
     <div className="staff-list-container">
       <div className="staff-header">
-      <h1>Listado Personal</h1>
-      <button className="new-staff-button" onClick={handleNewStaffClick}>
-      <FontAwesomeIcon icon={faPlus} /> Nuevo Cliente
-      </button>
+        <h1>Listado Personal</h1>
+        <button className="new-staff-button" onClick={handleNewStaffClick}>
+          <FontAwesomeIcon icon={faPlus} /> Nuevo Cliente
+        </button>
       </div>
       <div className="staff-search">
         <label htmlFor="staffSearch">Buscar Personal:</label>
@@ -51,12 +55,12 @@ function StaffList() {
               <td>{staff.role}</td>
               <td>{staff.phone}</td>
               <td>
-              <button className="action-button edit">
-                <FontAwesomeIcon icon={faEdit} /> Ver/Editar
-              </button>
-              <button className="action-button delete">
-                <FontAwesomeIcon icon={faTrash} /> Eliminar
-              </button>
+                <button className="action-button edit" onClick={() => handleViewStaffClick(staff.id)}>
+                  <FontAwesomeIcon icon={faEdit} /> Ver/Editar
+                </button>
+                <button className="action-button delete">
+                  <FontAwesomeIcon icon={faTrash} /> Eliminar
+                </button>
               </td>
             </tr>
           ))}
