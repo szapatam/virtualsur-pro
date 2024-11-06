@@ -1,0 +1,91 @@
+/* src/pages/NewDocs/NewDocs.css */
+.new-docs-container {
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.new-docs-header {
+    margin-bottom: 20px;
+}
+
+.new-docs-header h1 {
+    font-size: 1.8em;
+    color: #333;
+}
+
+.new-docs-search {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.new-docs-search label {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.search-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input-container input {
+    padding: 10px;
+    padding-right: 35px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 300px;
+}
+
+.search-icon {
+    position: absolute;
+    right: 10px;
+    color: #999;
+}
+
+.new-docs-table {
+    margin-bottom: 20px;
+}
+
+.new-docs-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.new-docs-table th,
+.new-docs-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.new-docs-table th {
+    color: white;
+    background-color: #333;
+    font-weight: bold;
+}
+
+.new-docs-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.docs-button {
+    padding: 10px 15px;
+    background-color: #ff4040;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    margin-left: 20px;
+}
+
+.docs-button:hover {
+    background-color: #e63946;
+}

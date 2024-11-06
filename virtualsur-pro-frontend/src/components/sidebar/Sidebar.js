@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBoxesStacked, faFileContract, faUsers, faFileAlt } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 
-function Sidebar({isVisible}) {
+function Sidebar({ isVisible }) {
   return (
     <div className={`sidebar ${isVisible ? '' : 'hidden'}`}>
       <nav className="sidebar-nav">
@@ -46,7 +46,7 @@ function Sidebar({isVisible}) {
               Documentos/Reportes
             </a>
             <ul>
-              <li><a href="#generate-docs">Generar Documentos</a></li>
+              <li><Link to="/docs/NewDocs" >Generar Documentos</Link></li>
               <li><a href="#contract-report">Reporte de Contratos</a></li>
               <li><a href="#inventory-history">Histórico de Inventario</a></li>
             </ul>
