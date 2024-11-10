@@ -1,0 +1,123 @@
+/* src/pages/NewReport/NewReport.css */
+.new-report-container {
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .new-report-header {
+    margin-bottom: 20px;
+  }
+  
+  .new-report-header h1 {
+    font-size: 1.8em;
+    color: #333;
+  }
+  
+  .new-report-filters {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    align-items: center;
+  }
+  
+  .new-report-filters label {
+    font-weight: bold;
+  }
+  
+  .new-report-filters select,
+  .new-report-filters input {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .new-report-table {
+    margin-bottom: 20px;
+  }
+  
+  .new-report-table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .new-report-table th,
+  .new-report-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .new-report-table th {
+    color: white;
+    background-color: #333;
+    font-weight: bold;
+  }
+  
+  .selected-row {
+    background-color: #f0f8ff;
+  }
+  
+  .new-report-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .report-button {
+    padding: 10px 15px;
+    background-color: #ff4040;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    margin-left: 20px;
+  }
+  
+  .report-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .report-button:hover:not(:disabled) {
+    background-color: #e63946;
+  }
+
+  .filter-button{
+    padding: 10px 15px;
+    background-color: #ff4040;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    margin-left: 20px;
+  }
+
+  .generate-button{
+    padding: 10px 15px;
+    background-color: #ff4040;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    margin-left: 20px;
+  } 
+
+  .new-report-generate {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.new-report-container {
+  padding: 20px;
+  background-color: #f4f4f4;
+  border-radius: 5px;
+}

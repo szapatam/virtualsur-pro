@@ -86,6 +86,26 @@
     margin-left: 20px;
 }
 
+.docs-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.docs-button:hover:not(:disabled) {
+    background-color: #e63946;
+}  
+
 .docs-button:hover {
     background-color: #e63946;
 }
+
+.selected-row {
+    background-color: #f0f8ff; /* #CAMBIOS!! -> Añadir color de fondo a la fila seleccionada */
+  }
+
+  
+  .new-docs-container {
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-radius: 5px;
+  }

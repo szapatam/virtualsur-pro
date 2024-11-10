@@ -47,8 +47,8 @@ function Sidebar({ isVisible }) {
             </a>
             <ul>
               <li><Link to="/docs/NewDocs" >Generar Documentos</Link></li>
-              <li><a href="#contract-report">Reporte de Contratos</a></li>
-              <li><a href="#inventory-history">Histórico de Inventario</a></li>
+              <li><Link to="/NewReport">Reporte de Contratos</Link></li>
+              <li><Link to="/InventoryHistory">Histórico de Inventario</Link></li>
             </ul>
           </li>
         </ul>

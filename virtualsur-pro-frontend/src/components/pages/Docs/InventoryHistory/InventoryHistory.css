@@ -1,0 +1,78 @@
+/* src/pages/InventoryHistory/InventoryHistory.css */
+.inventory-history-container {
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .inventory-history-header {
+    margin-bottom: 20px;
+  }
+  
+  .inventory-history-header h1 {
+    font-size: 1.8em;
+    color: #333;
+  }
+  
+  .inventory-history-filters {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .inventory-history-filters label {
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  
+  .inventory-history-filters select {
+    margin-right: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .inventory-history-table {
+    margin-bottom: 20px;
+  }
+  
+  .inventory-history-table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .inventory-history-table th,
+  .inventory-history-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .inventory-history-table th {
+    color: white;
+    background-color: #333;
+    font-weight: bold;
+  }
+  
+  .inventory-history-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .generate-report-button {
+    padding: 10px 15px;
+    background-color: #ff4040;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  
+  .generate-report-button:hover {
+    background-color: #e63946;
+  }
+  

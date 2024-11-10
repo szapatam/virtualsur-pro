@@ -1,11 +1,13 @@
 // src/pages/NewDocs/NewDocs.js
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import './NewDocs.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
 
 function NewDocs() {
-
+    const navigate = useNavigate();
+    
     const [contracts] = useState([
         { id: 'C001', name: 'Contrato A', detail: 'Detalles del contrato A' },
         { id: 'C002', name: 'Contrato B', detail: 'Detalles del contrato B' },
@@ -15,29 +17,42 @@ function NewDocs() {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredContracts, setFilteredContracts] = useState(contracts);
-
-    useEffect(() => {
-        const filtered = contracts.filter(contract =>
-            contract.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            contract.id.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        setFilteredContracts(filtered);
-    }, [searchTerm, contracts]);
+    const [selectedContract, setSelectedContract] = useState(null);
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
+    
+        const filtered = contracts.filter(contract =>
+            contract.name.toLowerCase().includes(e.target.value.toLowerCase()) ||
+            contract.id.toLowerCase().includes(e.target.value.toLowerCase())
+        );
+        setFilteredContracts(filtered);
     };
 
+    const handleRowClick = (contract) => {
+        if (selectedContract && selectedContract.id === contract.id){
+            setSelectedContract(null);
+        }else {
+        setSelectedContract(contract);
+        }
+    };
+
+    const handleContainerClick = (e) => {
+        if (!e.target.closest('.new-docs-table')) {
+          setSelectedContract(null);
+        }
+      };
+
     return (
-        <div className="new-docs-container">
+        <div className="new-docs-container" onClick={handleContainerClick}>
             <div className="new-docs-header">
                 <h1>Generar Docs</h1>
             </div>
 
             <div className="new-docs-search">
-                <label htmlFor="contractSearch">Buscar Contrato:</label>
+                <label htmlFor="search">Buscar Contrato:</label>
                 <div className="search-input-container">
-                    <input type="text" id="contractSearch" placeholder="Código del contrato" value={searchTerm} onChange={handleSearchChange} />
+                    <input type="text" id="search" placeholder="Código del contrato" value={searchTerm} onChange={handleSearchChange} />
                     <FontAwesomeIcon icon={faSearch} className="search-icon" />
                 </div>
             </div>
@@ -52,27 +67,21 @@ function NewDocs() {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredContracts.length > 0 ? (
-                            filteredContracts.map(contract => (
-                                <tr key={contract.id}>
+                            {filteredContracts.map(contract => (
+                                <tr key={contract.id} onClick={() => handleRowClick(contract)} className={selectedContract && selectedContract.id === contract.id ? 'selected-row' : ''}>
                                     <td>{contract.id}</td>
                                     <td>{contract.name}</td>
                                     <td>{contract.detail}</td>
                                 </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="3">No se encontraron contratos</td>
-                            </tr>
-                        )}
+                            ))}
                     </tbody>
                 </table>
             </div>
 
             <div className="new-docs-buttons">
-                <button className="docs-button">Ver Contrato</button>
-                <button className="docs-button">Generar Cotización</button>
-                <button className="docs-button">Generar Guía DE/RE</button>
+                <button className="docs-button" disabled={!selectedContract} onClick={() => navigate(`/ContractDetail/${selectedContract ? selectedContract.id : ''}`)}>Ver Contrato</button>
+                <button className="docs-button" disabled={!selectedContract}>Generar Cotización</button>
+                <button className="docs-button" disabled={!selectedContract}>Generar Guía DE/RE</button>
             </div>
         </div>
     );
