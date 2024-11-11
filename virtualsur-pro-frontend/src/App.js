@@ -12,6 +12,9 @@ import StaffDetail from './components/pages/staff/StaffDetails/StaffDetail';
 import NewDocs from './components/pages/Docs/NewDocs/NewDocs';
 import NewReport from './components/pages/Docs/NewReport/NewReport';
 import InventoryHistory from './components/pages/Docs/InventoryHistory/InventoryHistory';
+import InventoryList from './components/pages/inventory/InventoryList/InventoryList';
+import NewEquipment from './components/pages/inventory/NewEquipment/NewEquipment';
+import EquipmentDetail from './components/pages/inventory/EquipmentDetail/EquipmentDetail';
 
 //ESTE COMENTARIO SERA UNA PRUEBA PARA FORK GIT
 function App() {
@@ -28,6 +31,10 @@ function App() {
         <Route path='/docs/NewDocs' element={<NewDocs />} />
         <Route path='/NewReport' element={<NewReport />} />
         <Route path='/InventoryHistory' element={<InventoryHistory />} />
+        <Route path='/InventoryList' element={<InventoryList />} />
+        <Route path='/NewEquipment' element={<NewEquipment />} />
+        <Route path='/equipment/:equipmentId' element={<EquipmentDetail />} />
+
         
       </Routes>
     </Layout>

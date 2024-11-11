@@ -1,0 +1,191 @@
+/* EquipmentDetail.css */
+.equipment-detail-container {
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+  }
+  
+  .equipment-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .equipment-detail-header h2 {
+    font-size: 1.8em;
+    color: #333;
+  }
+  
+  .equipment-detail-search {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .equipment-detail-search label {
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  
+  .search-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .search-input-container input {
+    padding: 10px;
+    padding-right: 35px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 300px;
+  }
+  
+  .search-icon {
+    position: absolute;
+    right: 10px;
+    color: #999;
+  }
+
+  .back-to-list-button {
+    background-color: #ff4040;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  
+  .back-to-list-button:hover {
+    background-color: #e63535;
+  }
+
+  .search-button {
+    margin-left: 20px;
+    padding: 10px 15px;
+    background-color: #ff4040;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  
+  .equipment-detail-info {
+    margin-bottom: 20px;
+  }
+  
+  .equipment-section {
+    margin-bottom: 20px;
+  }
+  
+  .equipment-section h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  .equipment-field {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .equipment-field label {
+    font-weight: bold;
+    margin-right: 10px;
+    width: 150px;
+  }
+  
+  .equipment-field input {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    flex-grow: 1;
+  }
+  
+  .save-button {
+    padding: 10px 15px;
+    background-color: #ff4040;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  
+  .save-button:hover {
+    background-color: #e63946;
+  }
+  
+  .contracts-section {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .contracts-section h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    margin-top: 0;
+    color: #333;
+  }
+  
+  .contracts-section table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .contracts-section th,
+  .contracts-section td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .contracts-section th {
+    color: white;
+    background-color: #333;
+    font-weight: bold;
+  }
+  
+  .docs-button {
+    padding: 8px 12px;
+    background-color: #ff4040;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  
+  .docs-button:hover {
+    background-color: #e63946;
+  }
+  
+  .delete-button {
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  fieldset {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  
+  legend {
+    padding: 0 10px;
+    font-weight: bold;
+    font-size: 1.5em;
+  } 

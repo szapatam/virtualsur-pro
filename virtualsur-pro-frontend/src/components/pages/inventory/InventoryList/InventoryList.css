@@ -1,0 +1,114 @@
+/* src/pages/InventoryList/InventoryList.css */
+.inventory-list-container {
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .inventory-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .inventory-list-header h1 {
+    font-size: 1.8em;
+    color: #333;
+  }
+  
+  .new-equipment-button {
+    padding: 10px 15px;
+    background-color: #ff4040;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  
+  .new-equipment-button:hover {
+    background-color: #e63946;
+  }
+  
+  .inventory-list-filters {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .search-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .search-input-container input {
+    padding: 10px;
+    padding-right: 35px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 200px;
+  }
+  
+  .search-icon {
+    position: absolute;
+    right: 10px;
+    color: #999;
+  }
+  
+  .filter-select {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .inventory-list-table {
+    margin-bottom: 20px;
+  }
+  
+  .inventory-list-table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .inventory-list-table th,
+  .inventory-list-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .inventory-list-table th {
+    color: white;
+    background-color: #333;
+    font-weight: bold;
+  }
+  
+  .action-button {
+    padding: 5px 10px;
+    margin: 0 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  
+  .action-button.view {
+    background-color: #e63946;
+    color: #fff;
+  }
+  
+  .action-button.delete {
+    background-color: black;
+    color: #fff;
+  }
+  
+  .action-button:hover {
+    opacity: 0.8;
+  }
+  

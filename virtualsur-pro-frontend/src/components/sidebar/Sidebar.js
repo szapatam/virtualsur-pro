@@ -15,9 +15,8 @@ function Sidebar({ isVisible }) {
               Gestión de Inventario
             </a>
             <ul>
-              <li><a href="#inventory-list">Listado de Inventario</a></li>
-              <li><a href="#add-equipment">Ingresar Equipamiento</a></li>
-              <li><a href="#remove-equipment">Eliminar Equipamiento</a></li>
+              <li><Link to="/InventoryList">Listado de Inventario</Link></li>
+              <li><Link to="/NewEquipment">Ingresar Equipamiento</Link></li>
             </ul>
           </li>
           <li>

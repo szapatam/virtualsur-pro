@@ -52,7 +52,7 @@
 
 .search-button {
   padding: 10px 15px;
-  background-color: #007bff;
+  background-color: #ff4040;
   color: white;
   border: none;
   border-radius: 5px;
@@ -60,7 +60,7 @@
 }
 
 .search-button:hover {
-  background-color: #0069d9;
+  background-color: #ff4040;
 }
 
 form {
