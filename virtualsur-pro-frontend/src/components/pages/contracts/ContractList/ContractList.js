@@ -7,7 +7,7 @@ function ContractList() {
     const navigate = useNavigate();
 
     const handleaddEqupmentClick = () => {
-        navigate('/NewContract');
+        navigate('/ContractCreate');
     }
 
     const [contracts] = useState([

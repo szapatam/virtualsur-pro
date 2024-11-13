@@ -39,7 +39,7 @@ function ClientCreate() {
             </div>
             <form onSubmit={handleSubmit}>
                 <fieldset>
-                    <legend>Personal</legend>
+                    <legend>Datos del Cliente</legend>
                     <div className="form-group">
                         <label htmlFor="name">Nombre cliente:</label>
                         <input
