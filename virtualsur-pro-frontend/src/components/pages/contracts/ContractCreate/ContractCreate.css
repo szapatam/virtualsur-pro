@@ -1,0 +1,39 @@
+.container {
+    display: flex;
+    width: 80%;
+    max-width: 1200px;
+    height: 80vh;
+    border: 1px solid #000;
+}
+
+.left-section {
+    background-color: #c4c4c4;
+    /* Gris */
+    flex: 2;
+    /* Ocupa dos tercios del espacio */
+    margin-right: 20px;
+}
+
+.right-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    /* Ocupa un tercio del espacio */
+}
+
+.top-right-section,
+.bottom-right-section {
+    background-color: red;
+    /* Rojo y verde luego */
+    flex: 1;
+    margin-bottom: 20px;
+    background-clip: padding-box;
+    /* Evitar que el color pase al margen */
+}
+
+.bottom-right-section {
+    background-color: green;
+    /* Verde */
+    margin-bottom: 0;
+    /* Sin margen inferior en el último bloque */
+}

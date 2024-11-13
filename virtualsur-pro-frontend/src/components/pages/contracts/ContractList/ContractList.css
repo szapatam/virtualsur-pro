@@ -1,0 +1,118 @@
+/* src/pages/ContractList/ContractList.css */
+
+.contract-list-container {
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.contract-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+}
+
+.contract-list-header h1 {
+    font-size: 1.8em;
+    color: #333;
+}
+
+.new-contract-button {
+    padding: 10px 15px;
+    background-color: #ff4040;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.contract-list-search {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.filter-select {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-left: 10px;
+}
+
+.contract-list-search label {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.search-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input-container input {
+    padding: 10px;
+    padding-right: 35px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 300px;
+}
+
+.search-icon {
+    position: absolute;
+    right: 10px;
+    color: #999;
+}
+
+.contract-list-table {
+    margin-bottom: 20px;
+}
+
+.contract-list-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.contract-list-table th,
+.contract-list-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.contract-list-table th {
+    color: white;
+    background-color: #333;
+    font-weight: bold;
+}
+
+.contract-list-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.contract-button {
+    padding: 10px 15px;
+    background-color: #ff4040;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    margin-left: 20px;
+}
+
+.contract-button:hover {
+    background-color: #e63946;
+}
+
+.new-contract-button:hover {
+    background-color: #e63946;
+}

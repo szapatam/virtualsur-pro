@@ -25,8 +25,8 @@ function Sidebar({ isVisible }) {
               Gestión de Contratos
             </a>
             <ul>
-              <li><a href="#list-contracts">Listado de Contratos</a></li>
-              <li><a href="#add-contract">Ingresar Contrato</a></li>
+              <li><Link to="/ContractList">Listado de Contratos</Link></li>
+              <li><Link to="/ContractCreate">Ingresar Contrato</Link></li>
             </ul>
           </li>
           <li>
