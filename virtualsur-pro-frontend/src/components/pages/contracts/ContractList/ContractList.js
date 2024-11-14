@@ -9,6 +9,9 @@ function ContractList() {
     const handleaddEqupmentClick = () => {
         navigate('/ContractCreate');
     }
+    const handleViewContractClick = (contractId) => {
+        navigate(`/contract/${contractId}`);
+    }
 
     const [contracts] = useState([
         { id: 'C001', month: 'Enero', client: 'Cliente A', status: 'Activo', detail: 'Detalle A' },
@@ -64,7 +67,7 @@ function ContractList() {
                                 <td>{contract.month}</td>
                                 <td>{contract.client}</td>
                                 <td>
-                                    <button className="view-button">Ver/Editar</button>
+                                    <button className="view-button" onClick={() => { handleViewContractClick(contract.id) }}>Ver/Editar</button>
                                     <button className="delete-button">Eliminar</button>
                                 </td>
                             </tr>

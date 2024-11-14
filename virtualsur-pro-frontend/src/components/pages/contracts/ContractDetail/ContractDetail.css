@@ -1,0 +1,75 @@
+.form-detail-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 20px 10px;
+    grid-auto-flow: row;
+    grid-template-areas:
+        "contract contract contract"
+        "contract contract contract"
+        "inventory personal docs";
+}
+
+.contract {
+    grid-area: contract;
+}
+
+.inventory {
+    grid-area: inventory;
+}
+
+.personal {
+    grid-area: personal;
+}
+
+.docs {
+    grid-area: docs;
+}
+
+.form-detail-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+    gap: 20px;
+}
+
+.form-detail-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.form-detail-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.form-detail-group input,
+.form-detail-group select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.form-detail-final-price-group label {
+    color: red;
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+
+}
+
+.form-detail-final-price-group input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.form-detail-final-price-group {
+    flex: 1;
+    min-width: 200px;
+}

@@ -17,6 +17,7 @@ import NewEquipment from './components/pages/inventory/NewEquipment/NewEquipment
 import EquipmentDetail from './components/pages/inventory/EquipmentDetail/EquipmentDetail';
 import ContractList from './components/pages/contracts/ContractList/ContractList';
 import ContractCreate from './components/pages/contracts/ContractCreate/ContractCreate';
+import ContractDetail from './components/pages/contracts/ContractDetail/ContractDetail';
 
 //ESTE COMENTARIO SERA UNA PRUEBA PARA FORK GIT
 function App() {
@@ -38,6 +39,7 @@ function App() {
         <Route path='/equipment/:equipmentId' element={<EquipmentDetail />} />
         <Route path='/ContractList/' element={<ContractList />} />
         <Route path='/ContractCreate' element={<ContractCreate />} />
+        <Route path='/contract/:contractId' element={<ContractDetail />} />
 
 
       </Routes>

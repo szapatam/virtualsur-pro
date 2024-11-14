@@ -6,11 +6,11 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.new-contract-header{
+.new-contract-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-  }
+}
 
 .grid {
     display: grid;
@@ -25,7 +25,8 @@
     margin-top: 10px;
 }
 
-.box2, .box3 {
+.box2,
+.box3 {
     grid-column: 2 / 3;
     padding: 10px;
     border-radius: 8px;
@@ -77,15 +78,14 @@ legend {
         grid-template-rows: auto auto auto;
     }
 
-    .box1, .box2, .box3 {
+    .box1,
+    .box2,
+    .box3 {
         grid-column: 1 / 2;
         grid-row: auto;
     }
 }
 
-.event-name {
-    margin-left: 20px;
-}
 
 .submit-button {
     padding: 10px 20px;
@@ -96,18 +96,18 @@ legend {
     cursor: pointer;
     font-weight: bold;
     transition: background-color 0.3s ease;
-    max-width: 150px;
+    max-width: 200px;
     align-self: flex-start;
-  }
+}
 
-  .submit-button:hover {
+.submit-button:hover {
     background-color: #e63946;
-  }
+}
 
-  .save-button-container {
+.save-button-container {
     display: flex;
     justify-content: center;
-  }
+}
 
 .back-to-list-button {
     background-color: #ff4040;
@@ -131,22 +131,52 @@ legend {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
+}
 
-  .contract-section-box table {
+.contract-section-box table {
     width: 100%;
     border-collapse: collapse;
-  }
-  
-  .contract-section-box th,
-  .contract-section-box td {
+}
+
+.contract-section-box th,
+.contract-section-box td {
     border: 1px solid #ddd;
     padding: 10px;
     text-align: left;
-  }
-  
-  .contract-section-box th {
+}
+
+.contract-section-box th {
     color: white;
     background-color: #333;
     font-weight: bold;
-  }
+}
+
+.form-final-price-row {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    align-content: center;
+}
+
+.add-iventory-item {
+    background-color: #ff4040;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.remove-item {
+    margin-left: 20px;
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
