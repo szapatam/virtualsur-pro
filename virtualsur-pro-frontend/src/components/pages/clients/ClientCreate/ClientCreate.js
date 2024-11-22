@@ -38,6 +38,7 @@ function ClientCreate() {
 
             // Mostrar mensaje si el cliente se agregó correctamente
             setMensaje(response.data.mensaje);
+            alert('Cliente creado con exito.')
 
             // Limpiar el formulario
             setClientName('');
