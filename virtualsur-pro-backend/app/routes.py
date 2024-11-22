@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request
 from .models import Cliente
 from . import db
-import logging
 
 main = Blueprint('main', __name__)
 
@@ -11,14 +10,10 @@ def home():
     return jsonify({"mensaje": "Bienvenido al bakcend de VirtualSur"})
 
 # Ruta para agregar un nuevo cliente (POST)
-
-
 @main.route('/clientes', methods=['POST'])
 def agregar_cliente():
     try:
         data = request.get_json()
-        logging.warning(f"Datos recibidos: {data}")
-
         new_client = Cliente(
             client_name=data['client_name'],
             client_email=data['client_email'],
@@ -48,7 +43,7 @@ def obtener_clientes():
     ]
     return jsonify(clientes_data)
 
-
+# ruta para ver detalle del cliente seleccionado (GET)
 @main.route('/clientes/<int:client_id>', methods=['GET'])
 def obtener_cliente_id(client_id):
     cliente = Cliente.query.get(client_id)
@@ -64,7 +59,7 @@ def obtener_cliente_id(client_id):
     })
 
 
-# Ruta para actualizar un cliente por su RUT (PUT)
+# Ruta para actualizar un cliente (PUT)
 @main.route('/clientes/<int:client_id>', methods=['PUT'])
 def update_cliente(client_id):
     cliente = Cliente.query.get(client_id)
@@ -83,3 +78,14 @@ def update_cliente(client_id):
     # Confirmar cambios en la base de datos
     db.session.commit()
     return jsonify({"mensaje": f"Cliente '{cliente.client_name}' actualizado correctamente"})
+
+# Ruta para Eliminar un cliente por id(DELETE)
+@main.route('/clientes/<int:client_id>', methods=['DELETE'])
+def delete_cliente(client_id):
+    cliente = Cliente.query.get(client_id)
+    if cliente is None:
+        return jsonify({"message": "Cliente no encontrado"}), 404
+    
+    db.session.delete(cliente)
+    db.session.commit()
+    return jsonify({"message": "Cliente Eliminado con exito"}), 200

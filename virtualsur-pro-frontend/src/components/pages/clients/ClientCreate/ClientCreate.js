@@ -9,7 +9,7 @@ function ClientCreate() {
     const navigate = useNavigate();
 
 
-    // Estados para los campos del formulario
+    // Estados y setters para los campos del formulario
     const [clientName, setClientName] = useState('');
     const [clientEmail, setClientEmail] = useState('');
     const [clientAddress, setClientAddress] = useState('');
@@ -19,10 +19,10 @@ function ClientCreate() {
 
     // Manejar el envío del formulario
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        e.preventDefault(); //Evitar recarga de pagina cuando se envia.
 
         try {
-            // Datos del cliente a enviar al backend
+            // Se crea objeto para guardar datos del cliente a enviar al backend
             const nuevoCliente = {
                 client_name: clientName,
                 client_email: clientEmail,

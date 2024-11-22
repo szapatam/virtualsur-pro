@@ -27,6 +27,7 @@ function ClientList() {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
   // Función para obtener los clientes del backend
   const fetchClients = async () => {
     try {
@@ -43,6 +44,22 @@ function ClientList() {
   useEffect(() => {
     fetchClients();
   }, []);
+
+  //Eliminar clientes
+  const handleDeleteClient = (clientId) => {
+    //solicitud DELETE al backend
+    axios.delete(`http://127.0.0.1:5000/clientes/${clientId}`)
+    .then(response => {
+      //Eliminar cliente del estado para actualizar la lista
+      setClients(clients.filter(client => client.client_id !== clientId));
+      alert('Cliente Eliminado con exito');
+    })
+    .catch(error =>{
+      console.error('Error al eliminar cliente', error);
+      alert('Hubo un error al eliminar cliente')
+    })
+    
+  }
 
   return (
     <div className="client-list">
@@ -81,7 +98,7 @@ function ClientList() {
                 <button onClick={() => handleViewClientClick(client.client_id)} className="action-button edit">
                   <FontAwesomeIcon icon={faEdit} /> Ver/Editar
                 </button>
-                <button className="action-button delete">
+                <button className="action-button delete" onClick={() => handleDeleteClient(client.client_id)} >
                   <FontAwesomeIcon icon={faTrash} /> Eliminar
                 </button>
               </td>
