@@ -1,32 +1,67 @@
 // src/pages/clients/ClientDetail/ClientDetail.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ClientDetail.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
 
 function ClientDetail() {
   const navigate = useNavigate();
 
-  const [clientDetailData, setClientDetailData] = useState({
-    name: 'Ejemplo de Nombre',
-    email: 'test@ejemplo.com',
-    address: 'Calle test #123',
-    rut: '12345678-9',
-    phone: '111222333',
-  });
+  const { clientId } = useParams();
+  console.log('Client ID from URL:', clientId);
+  const [client, setClient] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
+  // Función para obtener los detalles del cliente
+  const fetchClientDetails = async () => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:5000/clientes/${clientId}`);
+      setClient(response.data);
+      setLoading(false);
+    } catch (err) {
+      setError('Hubo un error al obtener los detalles del cliente');
+      setLoading(false);
+    }
+  };
+
+  // Llamamos a fetchClientDetails al montar el componente
+  useEffect(() => {
+    fetchClientDetails();
+  }, [clientId]);
+
+  // Función para manejar los cambios en los campos del formulario
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setClientDetailData({ ...clientDetailData, [name]: value });
+    setClient({ ...client, [name]: value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Cambios Guardados:', clientDetailData);
+  // Función para guardar los cambios en el cliente
+  const handleSaveChanges = async () => {
+    try {
+      await axios.put(`http://127.0.0.1:5000/clientes/${clientId}`, client);
+      alert('Cliente actualizado correctamente');
+      navigate('/clientes');
+    } catch (err) {
+      setError('Hubo un error al actualizar el cliente');
+    }
   };
 
-  const handleDeleteClient = () => {
-    console.log('Cliente Eliminado:', clientDetailData.name);
-    navigate('/clientes');
+  if (loading) {
+    return <p>Cargando...</p>;
+  }
+
+  if (error) {
+    return <p className="error-message">{error}</p>;
+  }
+
+  // Maneja el cambio de valores en los inputs
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setClient((prevClient) => ({
+      ...prevClient,
+      [name]: value,
+    }));
   };
 
   return (
@@ -40,63 +75,65 @@ function ClientDetail() {
         <input type="text" id="clientSearch" placeholder="Nombre de cliente" />
         <button className="search-button">Buscar</button>
       </div>
-      <form onSubmit={handleSubmit}>
-        <fieldset>
-          <legend>Clientes</legend>
-          <div className="form-group">
-            <label htmlFor="name">Nombre Cliente:</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={clientDetailData.name}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="email">Correo:</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={clientDetailData.email}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="address">Dirección:</label>
-            <input
-              type="text"
-              id="address"
-              name="address"
-              value={clientDetailData.address}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="rut">RUT cliente:</label>
-            <input
-              type="text"
-              id="rut"
-              name="rut"
-              value={clientDetailData.rut}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="phone">Teléfono:</label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={clientDetailData.phone}
-              onChange={handleInputChange}
-            />
-          </div>
-        </fieldset>
-        <button type="submit" className="save-button">Guardar Cambios</button>
-        <button type="button" className="delete-button" onClick={handleDeleteClient}>Eliminar Cliente</button>
-      </form>
+      {client && (
+        <form onSubmit={handleSaveChanges}>
+          <fieldset>
+            <legend>Clientes</legend>
+            <div className="form-group">
+              <label htmlFor="name">Nombre Cliente:</label>
+              <input
+                type="text"
+                id="name"
+                name="client_name"
+                value={client.client_name}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="email">Correo:</label>
+              <input
+                type="email"
+                id="email"
+                name="client_email"
+                value={client.client_email}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="address">Dirección:</label>
+              <input
+                type="text"
+                id="address"
+                name="client_address"
+                value={client.client_address}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="rut">RUT cliente:</label>
+              <input
+                type="text"
+                id="rut"
+                name="client_rut"
+                value={client.client_rut}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="phone">Teléfono:</label>
+              <input
+                type="tel"
+                id="phone"
+                name="client_phone"
+                value={client.client_phone}
+                onChange={handleChange}
+              />
+            </div>
+          </fieldset>
+          <button type="submit" className="save-button">Guardar Cambios</button>
+          <button type="button" className="delete-button">Eliminar Cliente</button>
+        </form>
+      )}
       <div className="contracts-section">
         <fieldset>
           <legend>Contratos</legend>

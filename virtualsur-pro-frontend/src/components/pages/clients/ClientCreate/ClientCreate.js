@@ -2,37 +2,60 @@
 import React, { useState } from 'react';
 import './ClientCreate.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function ClientCreate() {
 
     const navigate = useNavigate();
 
-    // Estados locales para los datos del formulario
-    const [clientCreateData, setClientCreateData] = useState({
-        name: '',
-        email: '',
-        address: '',
-        rut: '',
-        phone: '',
-    });
 
-    // Maneja cambios en los inputs del formulario
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setClientCreateData({ ...clientCreateData, [name]: value });
-    };
+    // Estados para los campos del formulario
+    const [clientName, setClientName] = useState('');
+    const [clientEmail, setClientEmail] = useState('');
+    const [clientAddress, setClientAddress] = useState('');
+    const [clientRut, setClientRut] = useState('');
+    const [clientPhone, setClientPhone] = useState('');
+    const [mensaje, setMensaje] = useState('');
 
-    // Maneja el envío del formulario
-    const handleSubmit = (e) => {
+    // Manejar el envío del formulario
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Aquí se realizaría la lógica para enviar los datos del formulario
-        console.log('Datos del Cliente:', clientCreateData);
+
+        try {
+            // Datos del cliente a enviar al backend
+            const nuevoCliente = {
+                client_name: clientName,
+                client_email: clientEmail,
+                client_address: clientAddress,
+                client_rut: clientRut,
+                client_phone: clientPhone,
+            };
+
+            console.log(nuevoCliente); // Log para verificar los datos antes de enviar
+
+            // Solicitud POST al backend para agregar un nuevo cliente
+            const response = await axios.post('http://127.0.0.1:5000/clientes', nuevoCliente);
+
+            // Mostrar mensaje si el cliente se agregó correctamente
+            setMensaje(response.data.mensaje);
+
+            // Limpiar el formulario
+            setClientName('');
+            setClientEmail('');
+            setClientAddress('');
+            setClientRut('');
+            setClientPhone('');
+        } catch (error) {
+            console.error('Error al agregar el cliente:', error);
+            setMensaje('Hubo un error al agregar el cliente.');
+        }
     };
 
     return (
         <div className="client-create-container">
             <div className='client-create-header'>
                 <h1>Ingresar Cliente</h1>
+                {mensaje && <p className="mensaje">{mensaje}</p>}
                 <button className="back-to-list-button" onClick={() => navigate('/clientes')}>
                     Volver al Listado
                 </button>
@@ -46,8 +69,8 @@ function ClientCreate() {
                             type="text"
                             id="name"
                             name="name"
-                            value={clientCreateData.name}
-                            onChange={handleInputChange}
+                            value={clientName}
+                            onChange={(e) => setClientName(e.target.value)}
                             placeholder="Ejemplo de Nombre"
                             required
                         />
@@ -58,8 +81,8 @@ function ClientCreate() {
                             type="email"
                             id="email"
                             name="email"
-                            value={clientCreateData.email}
-                            onChange={handleInputChange}
+                            value={clientEmail}
+                            onChange={(e) => setClientEmail(e.target.value)}
                             placeholder="test@ejemplo.com"
                             required
                         />
@@ -70,8 +93,8 @@ function ClientCreate() {
                             type="text"
                             id="address"
                             name="address"
-                            value={clientCreateData.address}
-                            onChange={handleInputChange}
+                            value={clientAddress}
+                            onChange={(e) => setClientAddress(e.target.value)}
                             placeholder="Calle test #123"
                         />
                     </div>
@@ -81,27 +104,27 @@ function ClientCreate() {
                             type="text"
                             id="rut"
                             name="rut"
-                            value={clientCreateData.rut}
-                            onChange={handleInputChange}
+                            value={clientRut}
+                            onChange={(e) => setClientRut(e.target.value)}
                             placeholder="12345678-9"
                         />
                     </div>
                     <div className="form-group">
                         <label htmlFor="phone">Teléfono:</label>
                         <input
-                            type="tel"
+                            type="text"
                             id="phone"
                             name="phone"
-                            value={clientCreateData.phone}
-                            onChange={handleInputChange}
+                            value={clientPhone}
+                            onChange={(e) => setClientPhone(e.target.value)}
                             placeholder="111222333"
                         />
                     </div>
                 </fieldset>
                 <div className='save-button-container'>
-                <button type="submit" className="save-button">Guardar Cambios</button>
+                    <button type="submit" className="save-button">Guardar Cambios</button>
                 </div>
-                
+
             </form>
         </div>
     );

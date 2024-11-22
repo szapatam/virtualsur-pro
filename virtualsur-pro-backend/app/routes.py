@@ -1,31 +1,36 @@
 from flask import Blueprint, jsonify, request
-from . import db
 from .models import Cliente
+from . import db
+import logging
 
 main = Blueprint('main', __name__)
+
 
 @main.route('/')
 def home():
     return jsonify({"mensaje": "Bienvenido al bakcend de VirtualSur"})
 
 # Ruta para agregar un nuevo cliente (POST)
+
+
 @main.route('/clientes', methods=['POST'])
 def agregar_cliente():
-    data = request.get_json()  # Recibir los datos en formato JSON desde la solicitud
+    try:
+        data = request.get_json()
+        logging.warning(f"Datos recibidos: {data}")
 
-    nuevo_cliente = Cliente(
-        client_name=data.get('client_name'),
-        client_email=data.get('client_email'),
-        client_address=data.get('client_address'),
-        client_rut=data.get('client_rut'),
-        client_phone=data.get('client_phone')
-    )
-    
-    # Agregar y confirmar en la base de datos
-    db.session.add(nuevo_cliente)
-    db.session.commit()
-
-    return jsonify({"mensaje": f"Cliente '{data.get('client_name')}' agregado correctamente"}), 201
+        new_client = Cliente(
+            client_name=data['client_name'],
+            client_email=data['client_email'],
+            client_address=data['client_address'],
+            client_rut=data['client_rut'],
+            client_phone=data['client_phone']
+        )
+        db.session.add(new_client)
+        db.session.commit()
+        return jsonify({"message": "Cliente agregado con éxito"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 
 # Ruta para obtener la lista de clientes (GET)
@@ -44,34 +49,37 @@ def obtener_clientes():
     return jsonify(clientes_data)
 
 
-# Ruta para obtener un cliente específico por su RUT (GET)
-@main.route('/clientes/<string:rut>', methods=['GET'])
-def obtener_cliente(rut):
-    cliente = Cliente.query.filter_by(client_rut=rut).first_or_404()  # Obtener el cliente por RUT o devolver un error 404 si no existe
-    return jsonify({"client_id": cliente.client_id, "client_name": cliente.client_name, "client_email": cliente.client_email, "client_address": cliente.client_address, "client_rut": cliente.client_rut, "client_phone": cliente.client_phone})
+@main.route('/clientes/<int:client_id>', methods=['GET'])
+def obtener_cliente_id(client_id):
+    cliente = Cliente.query.get(client_id)
+    if cliente is None:
+        return jsonify({"message": "Cliente no encontrado"}), 404
+    return jsonify({
+        "client_id": cliente.client_id,
+        "client_name": cliente.client_name,
+        "client_email": cliente.client_email,
+        "client_address": cliente.client_address,
+        "client_rut": cliente.client_rut,
+        "client_phone": cliente.client_phone
+    })
 
 
 # Ruta para actualizar un cliente por su RUT (PUT)
-@main.route('/clientes/<string:rut>', methods=['PUT'])
-def actualizar_cliente(rut):
+@main.route('/clientes/<int:client_id>', methods=['PUT'])
+def update_cliente(client_id):
+    cliente = Cliente.query.get(client_id)
+    if cliente is None:
+        return jsonify({"message": "Cliente no encontrado"}), 404
+
     data = request.get_json()
-    cliente = Cliente.query.filter_by(client_rut=rut).first_or_404()
 
     # Actualizar los campos del cliente con los datos recibidos
     cliente.client_name = data.get('client_name')
     cliente.client_email = data.get('client_email')
     cliente.client_address = data.get('client_address')
+    cliente.client_rut = data.get('client_rut')
     cliente.client_phone = data.get('client_phone')
 
     # Confirmar cambios en la base de datos
     db.session.commit()
     return jsonify({"mensaje": f"Cliente '{cliente.client_name}' actualizado correctamente"})
-
-
-# Ruta para eliminar un cliente por su RUT (DELETE)
-@main.route('/clientes/<string:rut>', methods=['DELETE'])
-def eliminar_cliente(rut):
-    cliente = Cliente.query.filter_by(client_rut=rut).first_or_404()
-    db.session.delete(cliente)
-    db.session.commit()
-    return jsonify({"mensaje": f"Cliente '{cliente.client_name}' eliminado correctamente"})

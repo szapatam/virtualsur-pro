@@ -1,6 +1,6 @@
 from flask import Flask
-from .routes import main
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 
 # instancia de SQLAlchemy
 db = SQLAlchemy()
@@ -8,6 +8,7 @@ db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__)
+    CORS(app)
 
     # Configuración para la base de datos MySQL
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:admin@localhost/virtualsurpro'
@@ -17,6 +18,7 @@ def create_app():
     db.init_app(app)
 
     # Config. adicionales
+    from .routes import main
     app.register_blueprint(main)
 
     return app
