@@ -1,8 +1,15 @@
 from flask import Blueprint, jsonify, request
-from .models import Cliente
+from .models import Cliente, Personal, Role
 from . import db
 
 main = Blueprint('main', __name__)
+
+
+@main.route('/roles', methods=['GET'])
+def get_roles():
+    roles = Role.query.all()
+    roles_list = [{"role_id": role.role_id, "role_name": role.role_name} for role in roles]
+    return jsonify(roles_list)
 
 
 @main.route('/')
@@ -25,7 +32,7 @@ def agregar_cliente():
         db.session.commit()
         return jsonify({"message": "Cliente agregado con éxito"}), 201
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": str(e)}), 400 
 
 
 # Ruta para obtener la lista de clientes (GET)
@@ -89,3 +96,37 @@ def delete_cliente(client_id):
     db.session.delete(cliente)
     db.session.commit()
     return jsonify({"message": "Cliente Eliminado con exito"}), 200
+
+
+# ---- SECCIÓN DE PERSONAL -----
+
+@main.route('/personal', methods=['POST'])
+def add_personal():
+    data = request.get_json()
+    new_personal = Personal(
+        staff_name=data['staff_name'],
+        staff_rut=data['staff_rut'],
+        staff_email=data['staff_email'],
+        staff_phone=data['staff_phone'],
+        staff_address=data['staff_address'],
+        role_id=data['role_id'],
+    )
+    db.session.add(new_personal)
+    db.session.commit()
+    return jsonify({"mensaje": "Personal creado con exito"})
+
+@main.route('/personal', methods=['GET'])
+def get_personal():
+    personal_list = Personal.query.all()
+    result =[
+        {
+        "staff_id": p.staff_id,
+        "staff_name": p.staff_name,
+        "staff_rut": p.staff_rut,
+        "staff_email": p.staff_email,
+        "staff_phone": p.staff_phone,
+        "staff_address": p.staff_address,
+        "role_id": p.role_id
+        } for p in personal_list
+    ]
+    return jsonify(result)
