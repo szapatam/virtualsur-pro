@@ -117,16 +117,40 @@ def add_personal():
 
 @main.route('/personal', methods=['GET'])
 def get_personal():
-    personal_list = Personal.query.all()
-    result =[
+    # Realizar un join entre Personal y Rol para obtener los nombres de los roles
+    personal_list = Personal.query.join(Role, Personal.role_id == Role.role_id).add_columns(
+        Personal.staff_id,
+        Personal.staff_name,
+        Personal.staff_rut,
+        Personal.staff_email,
+        Personal.staff_phone,
+        Personal.staff_address,
+        Role.role_name.label("role_name")
+    ).all()
+
+    # Crear la respuesta JSON incluyendo el nombre del rol
+    result = [
         {
-        "staff_id": p.staff_id,
-        "staff_name": p.staff_name,
-        "staff_rut": p.staff_rut,
-        "staff_email": p.staff_email,
-        "staff_phone": p.staff_phone,
-        "staff_address": p.staff_address,
-        "role_id": p.role_id
+            "staff_id": p.staff_id,
+            "staff_name": p.staff_name,
+            "staff_rut": p.staff_rut,
+            "staff_email": p.staff_email,
+            "staff_phone": p.staff_phone,
+            "staff_address": p.staff_address,
+            "role": p.role_name
         } for p in personal_list
     ]
+
     return jsonify(result)
+
+
+# Ruta para Eliminar un personal por id(DELETE)
+@main.route('/personal/<int:staff_id>', methods=['DELETE'])
+def delete_staff(staff_id):
+    personal = Personal.query.get(staff_id)
+    if personal is None:
+        return jsonify({"message": "Personal no encontrado"}), 404
+    
+    db.session.delete(personal)
+    db.session.commit()
+    return jsonify({"message": "Personal Eliminado con exito"}), 200
