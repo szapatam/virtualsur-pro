@@ -30,12 +30,12 @@ function App() {
         <Route path="/clientes/:clientId" element={<ClientDetail />} />
         <Route path="/personal" element={<StaffList />} />
         <Route path="/personal/nuevo" element={<StaffCreate />} />
-        <Route path="/personal/:personalId" element={<StaffDetail />} />
+        <Route path="/personal/:staffId" element={<StaffDetail />} />
         <Route path='/docs/NewDocs' element={<NewDocs />} />
         <Route path='/NewReport' element={<NewReport />} />
         <Route path='/InventoryHistory' element={<InventoryHistory />} />
         <Route path='/InventoryList' element={<InventoryList />} />
-        <Route path='/NewEquipment' element={<NewEquipment />} />
+        <Route path='/equipment' element={<NewEquipment />} />
         <Route path='/equipment/:equipmentId' element={<EquipmentDetail />} />
         <Route path='/ContractList/' element={<ContractList />} />
         <Route path='/ContractCreate' element={<ContractCreate />} />

@@ -16,7 +16,7 @@ function Sidebar({ isVisible }) {
             </a>
             <ul>
               <li><Link to="/InventoryList">Listado de Inventario</Link></li>
-              <li><Link to="/NewEquipment">Ingresar Equipamiento</Link></li>
+              <li><Link to="/equipment">Ingresar Equipamiento</Link></li>
             </ul>
           </li>
           <li>

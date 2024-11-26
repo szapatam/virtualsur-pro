@@ -1,26 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import './NewEquipment.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function NewEquipment() {
-  const [equipmentName, setEquipmentName] = useState('');
-  const [category, setCategory] = useState('');
-  const [subCategory, setSubCategory] = useState('');
-  const [status, setStatus] = useState('');
-  const [quantity, setQuantity] = useState('');
-  const [technicalCode, setTechnicalCode] = useState('');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // #CAMBIOS!! -> Aquí iría la lógica para enviar los datos al backend o almacenarlos temporalmente
-    console.log({ equipmentName, category, subCategory, status, quantity, technicalCode });
-  };
-  
   const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
+  const [cantidad, setCantidad] = useState('');
+  const [estado, setEstado] = useState('Operativa');
+  const [equipment_name, setEquipmentName] = useState('');
+  const [mensaje, setMensaje] = useState('');
+
+  // Cargar categorías y subcategorías al cargar el componente
+  useEffect(() => {
+    const fetchCategories = async () => {
+        const response = await axios.get('http://127.0.0.1:5000/category');
+        setCategories(response.data);
+    };
+    fetchCategories();
+  }, []);
+
+// Manejar el cambio de categoría y cargar subcategorías asociadas
+const handleCategoryChange = async (e) => {
+  const categoryId = e.target.value;
+  setSelectedCategory(categoryId);
+
+  const response = await axios.get(`http://127.0.0.1:5000/subcategory/${categoryId}`);
+  setSubcategories(response.data);
+};
+
+// Manejar el envío del formulario
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+      // Datos del equipo a enviar al backend
+      const nuevoEquipo = {
+          subcategory_id: selectedSubcategory,
+          cantidad: cantidad,
+          estado: estado,
+          equipment_name: equipment_name
+      };
+
+      const response = await axios.post('http://127.0.0.1:5000/equipment', nuevoEquipo);
+      setMensaje(response.data.message);
+      // Limpiar el formulario
+      setSelectedCategory('');
+      setSelectedSubcategory('');
+      setCantidad('');
+      setEquipmentName('');
+      setEstado('Operativa');
+  } catch (error) {
+      console.error('Error al ingresar el equipo:', error);
+      setMensaje('Hubo un error al ingresar el equipo.');
+  }
+};
+
+
+
   return (
     <div className="new-equipment-container">
       <div className="new-equipment-header">
         <h1>Ingresar Equipamiento (Lote)</h1>
+        {mensaje && <p>{mensaje}</p>}
         <button className="back-to-list-button" onClick={() => navigate('/InventoryList')}>
             Volver al Listado
         </button>
@@ -28,67 +73,54 @@ function NewEquipment() {
       <form onSubmit={handleSubmit} className="new-equipment-form">
         <fieldset>
         <legend>Nuevo Equipamiento</legend>
-        <label>
-          Nombre Equipo:
-          <input 
-            type="text" 
-            value={equipmentName} 
-            onChange={(e) => setEquipmentName(e.target.value)} 
-            placeholder="Pantalla Samsung 2x1 mts" 
-          />
-        </label>
-
-        <label>
-          Categoría:
-          <select value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option value="">Categoría</option>
-            <option value="Pantallas">Pantallas</option>
-            <option value="Torres">Torres</option>
-            <option value="Cajas de Transporte">Cajas de Transporte</option>
-            <option value="Otros">Otros</option>
-          </select>
-        </label>
-
-        <label>
-          Sub categoría:
-          <select value={subCategory} onChange={(e) => setSubCategory(e.target.value)}>
-            <option value="">Sub categoría</option>
-            <option value="Pantalla 2x2">Pantalla 2x2</option>
-            <option value="Pantalla 4x4">Pantalla 4x4</option>
-            <option value="Caja Pequeña">Caja Pequeña</option>
-            <option value="Caja Grande">Caja Grande</option>
-          </select>
-        </label>
-
-        <label>
-          Estado:
-          <select value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="">Estado</option>
-            <option value="Nuevo">Nuevo</option>
-            <option value="Usado">Usado</option>
-            <option value="En Reparación">En Reparación</option>
-          </select>
-        </label>
-
-        <label>
-          Cantidad:
-          <input 
-            type="number" 
-            value={quantity} 
-            onChange={(e) => setQuantity(e.target.value)} 
-            placeholder="Cantidad" 
-          />
-        </label>
-
-        <label>
-          Código Técnico:
-          <input 
-            type="text" 
-            value={technicalCode} 
-            onChange={(e) => setTechnicalCode(e.target.value)} 
-            placeholder="Código Técnico" 
-          />
-        </label>
+        <div>
+            <label>Categoría:</label>
+            <select value={selectedCategory} onChange={handleCategoryChange}>
+              <option value="">Seleccione una categoría</option>
+                {categories.map((category) => (
+              <option key={category.category_id} value={category.category_id}>
+                {category.category_name}
+              </option>
+             ))}
+            </select>
+          </div>
+        <div>
+            <label>Subcategoría:</label>
+            <select value={selectedSubcategory} onChange={(e) => setSelectedSubcategory(e.target.value)}>
+              <option value="">Seleccione una subcategoría</option>
+                {subcategories.map((subcategory) => (
+              <option key={subcategory.subcategory_id} value={subcategory.subcategory_id}>
+                {subcategory.subcategory_name}
+              </option>
+              ))}
+              </select>
+          </div>
+          <div>
+            <label>Nombre del Equipo:</label>
+              <input
+                type="text"
+                value={equipment_name}
+                onChange={(e) => setEquipmentName(e.target.value)}
+              />
+          </div>
+          <div>
+            <label>Cantidad:</label>
+            <input
+              type="number"
+              value={cantidad}
+              onChange={(e) => setCantidad(e.target.value)}
+              min="1"
+              required
+            />
+          </div>
+          <div>
+            <label>Estado:</label>
+            <select value={estado} onChange={(e) => setEstado(e.target.value)}>
+              <option value="Operativa">Operativa</option>
+              <option value="No Operativa">No Operativa</option>
+              <option value="En Mantención">En Mantención</option>
+            </select>
+          </div>
         </fieldset>
         <div className='save-button-container'>
             <button type="submit" className="submit-button">Ingresar</button>

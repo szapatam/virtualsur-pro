@@ -1,58 +1,65 @@
 // src/pages/InventoryList/InventoryList.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './InventoryList.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function InventoryList() {
 
   const navigate = useNavigate();
+  // Estado para almacenar el listado de equipos
+  const [equipos, setEquipos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  
 
   const handleAddEquipmentClick = () => {
-    navigate('/NewEquipment');
+    navigate('/equipment');
   };
 
-  const handleViewEquipmentClick = (equipmentId) =>{
-    navigate(`/equipment/${equipmentId}`)
+  const handleViewEquipmentClick = (equipmentId) => {
+    console.log('Equipment ID:', equipmentId);
+    if (equipmentId) {
+      navigate(`/equipment/${equipmentId}`);
+    } else {
+      console.error('Equipment ID is undefined')
+    }
   }
+  // Efecto para obtener el listado de equipos al montar el componente
+  useEffect(() => {
+      const fetchEquipos = async () => {
+          try {
+              const response = await axios.get('http://127.0.0.1:5000/equipment');
+              setEquipos(response.data);
+              setLoading(false);
+          } catch (error) {
+            setError("Hubo un error al obtener el inventario:", error);
+              setLoading(false);
+          }
+        };
 
-  // Datos estáticos de ejemplo para el inventario
-  const [inventoryItems] = useState([
-    { id: 'E001', name: 'Equipo A', detail: 'Detalles del equipo A' },
-    { id: 'E002', name: 'Equipo B', detail: 'Detalles del equipo B' },
-    { id: 'E003', name: 'Equipo C', detail: 'Detalles del equipo C' },
-    { id: 'E004', name: 'Equipo D', detail: 'Detalles del equipo D' },
-  ]);
+        fetchEquipos();
+    }, []);
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredItems, setFilteredItems] = useState(inventoryItems);
 
-  // Manejar el cambio en el input de búsqueda
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    const filtered = inventoryItems.filter(item =>
-      item.name.toLowerCase().includes(e.target.value.toLowerCase()) ||
-      item.id.toLowerCase().includes(e.target.value.toLowerCase())
-    );
-    setFilteredItems(filtered);
-  };
 
   return (
     <div className="inventory-list-container">
       <div className="inventory-list-header">
         <h1>Listado de Inventario</h1>
-        <button className="new-equipment-button"onClick={handleAddEquipmentClick}>Nuevo Equipamiento</button> {/* #CAMBIOS!! -> Botón para agregar nuevo equipamiento */}
+        {loading && <p>Cargando...</p>}
+        {error && <p className="error-message">{error}</p>}
+        <button className="new-equipment-button"onClick={handleAddEquipmentClick}>Nuevo Equipamiento</button>
       </div>
-
       <div className="inventory-list-filters">
         <label htmlFor="search">Filtros:</label>
         <div className="search-input-container">
           <input
             type="text"
             id="search"
-            value={searchTerm}
-            onChange={handleSearchChange}
             placeholder="Código Técnico"
           />
           <FontAwesomeIcon icon={faSearch} className="search-icon" />
@@ -67,29 +74,35 @@ function InventoryList() {
           <option>Sub categoría</option>
         </select>
       </div>
-
       <div className="inventory-list-table">
         <table>
           <thead>
             <tr>
-              <th>Encabezado A</th>
-              <th>Encabezado B</th>
-              <th>Encabezado C</th>
-              <th>Encabezado D</th>
+              <th>Nombre</th>
+              <th>Código Técnico</th>
+              <th>Categoría</th>
+              <th>Subcategoría</th>
+              <th>Estado</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {/* Mostrar los elementos filtrados del inventario */}
-            {filteredItems.map(item => (
-              <tr key={item.id}>
-                <td>{item.id}</td>
-                <td>{item.name}</td>
-                <td>{item.detail}</td>
-                <td>
-                  <button className="action-button view" onClick={() => handleViewEquipmentClick(item.id) }>Ver/Editar</button>
-                  <button className="action-button delete">Eliminar</button>
-                </td>
-              </tr>
+          {equipos.map(equipo => (
+            <tr key={equipo.equipment_id}>
+              <td>{equipo.equipment_name}</td>
+              <td>{equipo.tech_code}</td>
+              <td>{equipo.category_name}</td>
+              <td>{equipo.subcategory_name}</td>
+              <td>{equipo.status_equipment}</td>
+              <td>
+                <button onClick={() => handleViewEquipmentClick(equipo.equipment_id)} className="action-button edit">
+                  <FontAwesomeIcon icon={faEdit} /> Ver/Editar
+                </button>
+                <button className="action-button delete">
+                  <FontAwesomeIcon icon={faTrash} /> Eliminar
+                </button>
+              </td>
+            </tr>
             ))}
           </tbody>
         </table>

@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from .models import Cliente, Personal, Role
+from .models import Cliente, Personal, Role, Equipment, Category, Subcategory
 from . import db
 
 main = Blueprint('main', __name__)
@@ -140,9 +140,37 @@ def get_personal():
             "role": p.role_name
         } for p in personal_list
     ]
-
     return jsonify(result)
 
+#Ruta obtener datos por ID
+@main.route('/personal/<int:staff_id>', methods=['GET'])
+def get_personal_detail(staff_id):
+    print("fetching details for staff_id", staff_id)
+    personal = Personal.query.join(Role, Personal.role_id == Role.role_id).add_columns(
+        Personal.staff_id,
+        Personal.staff_name,
+        Personal.staff_rut,
+        Personal.staff_email,
+        Personal.staff_phone,
+        Personal.staff_address,
+        Role.role_name.label("role_name")
+    ).filter(Personal.staff_id == staff_id).first()
+
+    if not personal:
+        print("Personal no encontrado con ID", staff_id)
+        return jsonify({"message": "Personal no encontrado"}), 404
+
+    result = {
+        "staff_id": personal.staff_id,
+        "staff_name": personal.staff_name,
+        "staff_rut": personal.staff_rut,
+        "staff_email": personal.staff_email,
+        "staff_phone": personal.staff_phone,
+        "staff_address": personal.staff_address,
+        "role": personal.role_name
+    }
+    print("personal econtrado:", result)
+    return jsonify(result)
 
 # Ruta para Eliminar un personal por id(DELETE)
 @main.route('/personal/<int:staff_id>', methods=['DELETE'])
@@ -154,3 +182,142 @@ def delete_staff(staff_id):
     db.session.delete(personal)
     db.session.commit()
     return jsonify({"message": "Personal Eliminado con exito"}), 200
+
+@main.route('/personal/<int:staff_id>', methods=['PUT'])
+def update_personal(staff_id):
+    personal = Personal.query.get(staff_id)
+    if not personal:
+        return jsonify({"message": "Personal no encontrado"}), 404
+
+    # Datos del request
+    data = request.get_json()
+    
+    try:
+        personal.staff_name = data['staff_name']
+        personal.staff_rut = data['staff_rut']
+        personal.staff_email = data['staff_email']
+        personal.staff_phone = data['staff_phone']
+        personal.staff_address = data['staff_address']
+        personal.role_id = data['role_id']
+
+        db.session.commit()
+        return jsonify({"message": "Datos del personal actualizados correctamente"}), 200
+    except Exception:
+        return jsonify({"message": "Error al actualizar el personal"}), 500
+
+
+# SECCIÓN DE INVENTARIO
+
+#CATEGORIAS Y SUB CATEGORIAS
+# Ruta para obtener todas las categorías
+@main.route('/category', methods=['GET'])
+def get_categorias():
+    categorias = Category.query.all()
+    result = [{"category_id": c.category_id, "category_name": c.category_name} for c in categorias]
+    return jsonify(result)
+
+@main.route('/subcategory/<int:category_id>', methods=['GET'])
+def get_subcategorias(category_id):
+    subcategorias = Subcategory.query.filter_by(category_id=category_id).all()
+    result = [
+        {
+            "subcategory_id": s.subcategory_id,
+            "subcategory_name": s.subcategory_name,
+            "codigo_tecnico": s.codigo_tecnico
+        } for s in subcategorias
+    ]
+    return jsonify(result)
+
+
+# Ruta para obtener el listado de equipos (GET)
+@main.route('/equipment', methods=['GET'])
+def obtener_equipos():
+    # Join para traer información de categorías y subcategorías
+    equipos = Equipment.query \
+        .join(Subcategory, Equipment.subcategory_id == Subcategory.subcategory_id) \
+        .join(Category, Subcategory.category_id == Category.category_id) \
+        .add_columns(
+            Equipment.equipment_id,
+            Equipment.tech_code,
+            Equipment.status_equipment,
+            Equipment.equipment_name,
+            Subcategory.subcategory_name,
+            Category.category_name
+        ).all()
+
+    # Convertir los resultados en una lista de diccionarios
+    result = [
+        {
+            "equipment_id": equipo.equipment_id,
+            "tech_code": equipo.tech_code,
+            "status_equipment": equipo.status_equipment,
+            "equipment_name": equipo.equipment_name,
+            "subcategory_name": equipo.subcategory_name,
+            "category_name": equipo.category_name
+        } for equipo in equipos
+    ]
+
+    # Retornar como JSON
+    return jsonify(result)
+
+
+# RUTA: Obtener equipo por ID
+@main.route('/equipment/<int:equipment_id>', methods=['GET'])
+def get_equipo_detail(equipment_id):
+    equipo = Equipment.query.join(Subcategory, Equipment.subcategory_id == Subcategory.subcategory_id).add_columns(
+        Equipment.equipment_id,
+        Equipment.equipment_name,
+        Equipment.tech_code,
+        Equipment.status_equipment,
+        Subcategory.subcategory_name.label("subcategory_name")
+    ).filter(Equipment.equipment_id == equipment_id).first()
+
+    if not equipo:
+        return jsonify({"message": "Equipo no encontrado"}), 404
+
+    result = {
+        "equipment_id": equipo.equipment_id,
+        "equipment_name": equipo.equipment_name,
+        "tech_code": equipo.tech_code,
+        "status_equipment": equipo.status_equipment,
+        "subcategory": equipo.subcategory_name
+    }
+    return jsonify(result)
+
+
+@main.route('/equipment', methods=['POST'])
+def ingresar_equipo():
+    data = request.json
+    subcategory_id = data['subcategory_id']
+    cantidad = data['cantidad']
+    estado = data['estado']
+    equipment_name = data['equipment_name']
+
+    # Obtener subcategoría para generar los códigos técnicos
+    subcategoria = Subcategory.query.get(subcategory_id)
+
+    if not subcategoria:
+        return jsonify({"message": "Subcategoría no encontrada"}), 404
+
+    # Obtener la cantidad actual de equipos de esa subcategoría para continuar la numeración
+    existing_equipments = Equipment.query.filter_by(subcategory_id=subcategory_id).count()
+
+    # Crear nuevos registros de equipos
+    nuevos_equipos = []
+    existing_equipments = int(existing_equipments)
+    cantidad = int(cantidad)
+    for i in range(existing_equipments + 1, existing_equipments + cantidad + 1):
+        codigo_unico = f"{subcategoria.codigo_tecnico}-{i:03}"
+        nuevo_equipo = Equipment(
+            subcategory_id=subcategory_id,
+            tech_code=codigo_unico,
+            status_equipment=estado,
+            equipment_name = equipment_name
+        )
+        nuevos_equipos.append(nuevo_equipo)
+
+    # Añadir nuevos equipos a la base de datos
+    db.session.add_all(nuevos_equipos)
+    db.session.commit()
+
+    return jsonify({"message": f"{cantidad} equipos ingresados exitosamente."}), 201

@@ -14,7 +14,12 @@ function StaffList() {
   };
 
   const handleViewStaffClick = (staffId) => {
-    navigate(`/personal/${staffId}`);
+    console.log('Client ID:', staffId);
+    if (staffId) {
+      navigate(`/personal/${staffId}`);
+    } else {
+      console.error('Cliente ID is undefined')
+    }
   }
 
   const [staffs, setStaffs] = useState([]);
@@ -45,11 +50,11 @@ function StaffList() {
       .then(response => {
         //Eliminar personal del estado para actualizar la lista
         setStaffs(staffs.filter(staff => staff.staff_id !== staffId));
-        alert('Cliente Eliminado con exito');
+        alert('Personal Eliminado con exito');
       })
       .catch(error =>{
-        console.error('Error al eliminar cliente', error);
-        alert('Hubo un error al eliminar cliente')
+        console.error('Error al eliminar Personal', error);
+        alert('Hubo un error al eliminar Personal')
       })
       
     }
@@ -61,6 +66,7 @@ function StaffList() {
       <div className="staff-header">
         <h1>Listado Personal</h1>
         {error && <p className="error-message">{error}</p>}
+        {loading && <p>Cargando...</p>}
         <button className="new-staff-button" onClick={handleNewStaffClick}>
           <FontAwesomeIcon icon={faPlus} /> Nuevo Cliente
         </button>

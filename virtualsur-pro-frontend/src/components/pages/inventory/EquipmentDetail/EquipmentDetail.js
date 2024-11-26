@@ -1,27 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './EquipmentDetail.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
 
 function EquipmentDetail() {
-  const navigate = useNavigate();  
+  const navigate = useNavigate();
 
-  const [equipment] = useState({
-    id: 'EQ001',
-    name: 'Pantalla Samsung 2x1 mts',
-    category: 'Pantallas LEDs',
-    subcategory: 'Pantallas LEDs 2x1',
-    status: 'Disponible',
-  });
-  const [contracts] = useState([
-    { id: 'C001', name: 'Contrato A', detail: 'Detalles del contrato A' },
-    { id: 'C002', name: 'Contrato B', detail: 'Detalles del contrato B' },
-    { id: 'C003', name: 'Contrato C', detail: 'Detalles del contrato C' },
-  ]);
-  const [setSelectedContract] = useState(null);
+  const { equipmentId } = useParams();
+  const [equipment, setEquipment] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleContractClick = (contract) => {
-    setSelectedContract(contract);
-  };
+  useEffect(() => {
+      const fetchEquipmentDetails = async () => {
+          try {
+              const response = await axios.get(`http://127.0.0.1:5000/equipment/${equipmentId}`);
+              setEquipment(response.data);
+          } catch (err) {
+              setError('Hubo un error al obtener los detalles del equipo');
+          } finally {
+              setLoading(false);
+          }
+      };
+
+      fetchEquipmentDetails();
+  }, [equipmentId]);
+
+  if (loading) {
+    return <div>Cargando detalles del equipo...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   return (
     <div className="equipment-detail-container">
@@ -61,7 +72,6 @@ function EquipmentDetail() {
           </div>
           </fieldset>
           <button className="save-button">Guardar Cambios</button>
-          <button className="delete-button">Eliminar Equpamiento</button>
           </form>
         </div>
 
@@ -80,16 +90,6 @@ function EquipmentDetail() {
             </tr>
           </thead>
           <tbody>
-            {contracts.map(contract => (
-              <tr key={contract.id} onClick={() => handleContractClick(contract)}>
-                <td>{contract.id}</td>
-                <td>{contract.name}</td>
-                <td>{contract.detail}</td>
-                <td>
-                  <button className="docs-button">Ver Contrato</button>
-                </td>
-              </tr>
-            ))}
           </tbody>
         </table>
       </div>

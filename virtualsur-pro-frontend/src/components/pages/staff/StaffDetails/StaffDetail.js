@@ -1,39 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './StaffDetail.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
 
 function StaffDetail() {
-
     const navigate = useNavigate();
 
-    const [staffDetailData, setstaffDetailData] = useState({
-        name: 'Ejemplo de Nombre',
-        email: 'test@ejemplo.com',
-        address: 'Calle test #123',
-        rut: '12345678-9',
-        phone: '111222333',
-    });
+    const { staffId } = useParams();
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setstaffDetailData({ ...staffDetailData, [name]: value });
+    const [staffName, setStaffName] = useState('');
+    const [staffRut, setStaffRut] = useState('');
+    const [staffEmail, setStaffEmail] = useState('');
+    const [staffPhone, setStaffPhone] = useState('');
+    const [staffAddress, setStaffAddress] = useState('');
+    const [roleId, setRoleId] = useState('');
+    const [roles, setRoles] = useState([]);
+    const [mensaje, setMensaje] = useState('');
+
+      // Obtener el listado de roles al cargar el componente
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:5000/roles');
+        setRoles(response.data);
+      } catch (error) {
+        console.error('Error al obtener los roles:', error);
+      }
+    };  
+
+    fetchRoles();
+  }, []);
+    useEffect(() => {
+      // Fetch the details of the staff by id
+      const fetchStaffDetails = async () => {
+        try {
+          const response = await axios.get(`http://127.0.0.1:5000/personal/${staffId}`);
+          const staffData = response.data;
+  
+          setStaffName(staffData.staff_name);
+          setStaffRut(staffData.staff_rut);
+          setStaffEmail(staffData.staff_email);
+          setStaffPhone(staffData.staff_phone);
+          setStaffAddress(staffData.staff_address);
+          setRoleId(staffData.role_id);
+        } catch (error) {
+          console.error('Error al obtener el detalle del personal:', error);
+          setMensaje('Hubo un error al obtener los detalles del personal.');
+        }
+      };
+  
+      fetchStaffDetails();
+    }, [staffId]);
+  
+    const handleUpdate = async (e) => {
+      e.preventDefault();
+      try {
+        const updatedStaff = {
+          staff_name: staffName,
+          staff_rut: staffRut,
+          staff_email: staffEmail,
+          staff_phone: staffPhone,
+          staff_address: staffAddress,
+          role_id: roleId, 
+        };
+  
+        const response = await axios.put(`http://127.0.0.1:5000/personal/${staffId}`, updatedStaff);
+        setMensaje(response.data.message);
+      } catch (error) {
+        console.error('Error al actualizar el personal:', error);
+        setMensaje('Hubo un error al actualizar los datos del personal.');
+      }
     };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log('Cambios Guardados:', staffDetailData);
-    };
-
-    const handleDeletestaff = () => {
-        console.log('Personal Eliminado:', staffDetailData.name);
-        navigate('/personal');
-    };
-
 
     return (
         <div className="staff-detail-container">
             <div className="staff-detail-header">
                 <h2>Detalle Personal</h2>
+                { mensaje && <p className='message'>{mensaje}</p>}
                 <button className='back-to-list-button' onClick={() => navigate('/personal')} > Volver al listado</button>
             </div>
             <div className="staff-search">
@@ -41,7 +84,7 @@ function StaffDetail() {
                 <input type="text" id="staffSearch" placeholder="Nombre de personal" />
                 <button className="search-button">Buscar</button>
             </div>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleUpdate}>
                 <fieldset>
                     <legend>Personal</legend>
                     <div className="form-group">
@@ -49,9 +92,9 @@ function StaffDetail() {
                         <input
                             type="text"
                             id="name"
-                            name="name"
-                            value={staffDetailData.name}
-                            onChange={handleInputChange}
+                            name="staff_name"
+                            value={staffName}
+                            onChange={(e) => setStaffName(e.target.value)}
                         />
                     </div>
                     <div className="form-group">
@@ -59,9 +102,9 @@ function StaffDetail() {
                         <input
                             type="email"
                             id="email"
-                            name="email"
-                            value={staffDetailData.email}
-                            onChange={handleInputChange}
+                            name="staff_email"
+                            value={staffEmail}
+                            onChange={(e) => setStaffEmail(e.target.value)}
                         />
                     </div>
                     <div className="form-group">
@@ -69,9 +112,9 @@ function StaffDetail() {
                         <input
                             type="text"
                             id="address"
-                            name="address"
-                            value={staffDetailData.address}
-                            onChange={handleInputChange}
+                            name="staff_address"
+                            value={staffAddress}
+                            onChange={(e) => setStaffEmail(e.target.value)}
                         />
                     </div>
                     <div className="form-group">
@@ -79,9 +122,9 @@ function StaffDetail() {
                         <input
                             type="text"
                             id="rut"
-                            name="rut"
-                            value={staffDetailData.rut}
-                            onChange={handleInputChange}
+                            name="staff_rut"
+                            value={staffRut}
+                            onChange={(e) => setStaffRut(e.target.value)}
                         />
                     </div>
                     <div className="form-group">
@@ -89,14 +132,24 @@ function StaffDetail() {
                         <input
                             type="tel"
                             id="phone"
-                            name="phone"
-                            value={staffDetailData.phone}
-                            onChange={handleInputChange}
+                            name="staff_phone"
+                            value={staffPhone}
+                            onChange={(e) => setStaffPhone(e.target.value)}
                         />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="role">Rol:</label>
+                        <select value={roleId} onChange={(e) => setRoleId(e.target.value)}>
+                            <option value="">Seleccione un rol</option>
+                            {Array.isArray(roles) && roles.map((role) => (
+                            <option key={role.role_id} value={role.role_id}>
+                                {role.role_name}
+                             </option>
+                            ))}
+                        </select>
                     </div>
                 </fieldset>
                 <button type="submit" className="save-button">Guardar Cambios</button>
-                <button type="button" className="delete-button" onClick={handleDeletestaff}>Eliminar Personal</button>
             </form>
             <div className="contracts-section">
                 <fieldset>

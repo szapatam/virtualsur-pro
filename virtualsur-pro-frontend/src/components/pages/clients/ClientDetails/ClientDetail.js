@@ -14,27 +14,22 @@ function ClientDetail() {
   const [error, setError] = useState('');
 
   // Función para obtener los detalles del cliente
-  const fetchClientDetails = async () => {
-    try {
-      const response = await axios.get(`http://127.0.0.1:5000/clientes/${clientId}`);
-      setClient(response.data);
-      setLoading(false);
-    } catch (err) {
-      setError('Hubo un error al obtener los detalles del cliente');
-      setLoading(false);
-    }
-  };
+
 
   // Llamamos a fetchClientDetails al montar el componente
   useEffect(() => {
-    fetchClientDetails();
+    const fetchClientDetails = async () => {
+      try {
+        const response = await axios.get(`http://127.0.0.1:5000/clientes/${clientId}`);
+        setClient(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError('Hubo un error al obtener los detalles del cliente');
+        setLoading(false);
+      }
+    }; fetchClientDetails();
   }, [clientId]);
 
-  // Función para manejar los cambios en los campos del formulario
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setClient({ ...client, [name]: value });
-  };
 
   // Función para guardar los cambios en el cliente
   const handleSaveChanges = async () => {
