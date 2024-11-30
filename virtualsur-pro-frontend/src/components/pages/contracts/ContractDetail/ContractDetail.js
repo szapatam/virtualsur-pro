@@ -13,6 +13,7 @@ function ContractDetail() {
         try {
             const response = await axios.get('http://127.0.0.1:5000/Clients');
             setClient(response.data);
+            console.log(setClient);
         } catch (error) {
             console.error('Error al obtener los clientes:', error);
         }

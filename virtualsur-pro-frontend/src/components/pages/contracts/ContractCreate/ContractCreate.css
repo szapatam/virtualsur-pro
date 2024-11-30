@@ -180,3 +180,12 @@ legend {
     font-weight: bold;
     transition: background-color 0.3s ease;
 }
+
+.form-detail-group input,
+.form-detail-group select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}

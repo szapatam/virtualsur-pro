@@ -1,9 +1,26 @@
-import React from 'react';
+import {React, useEffect, useState} from 'react';
 import './ContractCreate.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 function NewContract() {
 
     const navigate = useNavigate();
+    const [client, setClient] = useState([]);
+    
+    useEffect(() => {
+        const fetchCLient = async () => {
+        try {
+            const response = await axios.get('http://127.0.0.1:5000/Clients');
+            setClient(response.data);
+            console.log(setClient);
+        } catch (error) {
+            console.error('Error al obtener los clientes:', error);
+        }
+        };  
+
+        fetchCLient();
+    }, []);
+
 
     return (
         <div class="new-contract-container">
@@ -15,13 +32,19 @@ function NewContract() {
             </div>
             <div className='grid'>
                 <div class="box1">
+                    <form>
                     <div className='contract-section-box'>
                         <fieldset>
                             <legend> Nuevo Contrato</legend>
                             <div className='form-row'>
                                 <label>Ingresar Cliente: </label>
-                                <select className='contract-form'>
-                                    <option value="cliente">Seleccionar cliente</option>
+                                <select id='cbxClients' className='contract-form'>
+                            <option value="">Seleccione un rol</option>
+                            {Array.isArray(client) && client.map((client) => (
+                            <option key={client.client_id} value={client.client_id}>
+                                {client.client_name}
+                             </option>
+                            ))}
                                 </select>
                                 <label className='event-name'>Nombre del evento:</label>
                                 <input type='text' className='contract-form'></input>
@@ -52,7 +75,9 @@ function NewContract() {
                         <div className='save-button-container'>
                             <button className='submit-button'> Crear Contrato</button>
                         </div>
+                        
                     </div>
+                    </form>
 
                 </div>
                 <div class="box2">
