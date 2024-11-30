@@ -1,10 +1,25 @@
-import React from 'react';
+import React, {useState, useEffect } from 'react';
 import './ContractDetail.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function ContractDetail() {
 
     const navigate = useNavigate();
+    const [client, setClient] = useState([]);
+    
+    useEffect(() => {
+        const fetchCLient = async () => {
+        try {
+            const response = await axios.get('http://127.0.0.1:5000/Clients');
+            setClient(response.data);
+        } catch (error) {
+            console.error('Error al obtener los clientes:', error);
+        }
+        };  
+
+        fetchCLient();
+    }, []);
 
     return (
         <div class="form-detail-container">
@@ -20,8 +35,13 @@ function ContractDetail() {
                         <div className='form-detail-row'>
                             <div className='form-detail-group'>
                                 <label>Ingresar Cliente: </label>
-                                <select>
-                                    <option value="cliente">Seleccionar cliente</option>
+                                <select id='cbxClients'>
+                            <option value="">Seleccione un rol</option>
+                            {Array.isArray(client) && client.map((client) => (
+                            <option key={client.client_id} value={client.client_id}>
+                                {client.client_name}
+                             </option>
+                            ))}
                                 </select>
                                 <label>Nombre del evento: </label>
                                 <input type='text' />

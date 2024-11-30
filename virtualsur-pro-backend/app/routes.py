@@ -321,3 +321,10 @@ def ingresar_equipo():
     db.session.commit()
 
     return jsonify({"message": f"{cantidad} equipos ingresados exitosamente."}), 201
+
+
+@main.route('Clients', methods=['GET'])
+def get_client():
+    client = Cliente.query.all()
+    client_list = [{"client_id": client.client_id, "client_name": client.client_name} for client in client]
+    return jsonify(client_list)
