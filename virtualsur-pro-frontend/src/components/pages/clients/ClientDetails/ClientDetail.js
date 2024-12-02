@@ -126,7 +126,6 @@ function ClientDetail() {
             </div>
           </fieldset>
           <button type="submit" className="save-button">Guardar Cambios</button>
-          <button type="button" className="delete-button">Eliminar Cliente</button>
         </form>
       )}
       <div className="contracts-section">
