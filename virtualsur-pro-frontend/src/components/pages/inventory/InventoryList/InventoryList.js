@@ -20,7 +20,7 @@ function InventoryList() {
     navigate('/equipment');
   };
 
-  const handleViewEquipmentClick = (equipmentId) => {
+  const handleViewEquipmentClick = async (equipmentId) => {
     console.log('Equipment ID:', equipmentId);
     if (equipmentId) {
       navigate(`/equipment/${equipmentId}`);
@@ -28,6 +28,19 @@ function InventoryList() {
       console.error('Equipment ID is undefined')
     }
   }
+
+  const handleDeleteEquipment = (equipmentId) => {
+    try {
+      console.log(`http://127.0.0.1:5000/equipment/${equipmentId}`)
+    axios.delete(`http://127.0.0.1:5000/equipment/${equipmentId}`);
+    setLoading(false);
+    } catch (error) {
+      setError("Hubo un error al borrar:", error);
+        setLoading(false);
+    }
+
+  }
+  
   // Efecto para obtener el listado de equipos al montar el componente
   useEffect(() => {
       const fetchEquipos = async () => {
@@ -98,7 +111,7 @@ function InventoryList() {
                 <button onClick={() => handleViewEquipmentClick(equipo.equipment_id)} className="action-button edit">
                   <FontAwesomeIcon icon={faEdit} /> Ver/Editar
                 </button>
-                <button className="action-button delete">
+                <button className="action-button delete" onClick={() => handleDeleteEquipment(equipo.equipment_id)}>
                   <FontAwesomeIcon icon={faTrash} /> Eliminar
                 </button>
               </td>

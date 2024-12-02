@@ -323,6 +323,17 @@ def ingresar_equipo():
     return jsonify({"message": f"{cantidad} equipos ingresados exitosamente."}), 201
 
 
+@main.route('/equipment/<int:equipment_id>', methods=['DELETE'])
+def delete_equipment(equipment_id):
+    equipment = Equipment.query.get(equipment_id)
+    if equipment is None:
+        return jsonify({"message": "equipment no encontrado"}), 404
+    
+    db.session.delete(equipment)
+    db.session.commit()
+    return jsonify({"message": "equipment Eliminado con exito"}), 200
+
+
 @main.route('/Clients', methods=['GET'])
 def get_client():
     client = Cliente.query.all()
