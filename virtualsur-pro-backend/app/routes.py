@@ -8,7 +8,8 @@ main = Blueprint('main', __name__)
 @main.route('/roles', methods=['GET'])
 def get_roles():
     roles = Role.query.all()
-    roles_list = [{"role_id": role.role_id, "role_name": role.role_name} for role in roles]
+    roles_list = [{"role_id": role.role_id, "role_name": role.role_name}
+                  for role in roles]
     return jsonify(roles_list)
 
 
@@ -17,6 +18,8 @@ def home():
     return jsonify({"mensaje": "Bienvenido al bakcend de VirtualSur"})
 
 # Ruta para agregar un nuevo cliente (POST)
+
+
 @main.route('/clientes', methods=['POST'])
 def agregar_cliente():
     try:
@@ -32,7 +35,7 @@ def agregar_cliente():
         db.session.commit()
         return jsonify({"message": "Cliente agregado con éxito"}), 201
     except Exception as e:
-        return jsonify({"error": str(e)}), 400 
+        return jsonify({"error": str(e)}), 400
 
 
 # Ruta para obtener la lista de clientes (GET)
@@ -51,6 +54,8 @@ def obtener_clientes():
     return jsonify(clientes_data)
 
 # ruta para ver detalle del cliente seleccionado (GET)
+
+
 @main.route('/clientes/<int:client_id>', methods=['GET'])
 def obtener_cliente_id(client_id):
     cliente = Cliente.query.get(client_id)
@@ -87,12 +92,14 @@ def update_cliente(client_id):
     return jsonify({"mensaje": f"Cliente '{cliente.client_name}' actualizado correctamente"})
 
 # Ruta para Eliminar un cliente por id(DELETE)
+
+
 @main.route('/clientes/<int:client_id>', methods=['DELETE'])
 def delete_cliente(client_id):
     cliente = Cliente.query.get(client_id)
     if cliente is None:
         return jsonify({"message": "Cliente no encontrado"}), 404
-    
+
     db.session.delete(cliente)
     db.session.commit()
     return jsonify({"message": "Cliente Eliminado con exito"}), 200
@@ -114,6 +121,7 @@ def add_personal():
     db.session.add(new_personal)
     db.session.commit()
     return jsonify({"mensaje": "Personal creado con exito"})
+
 
 @main.route('/personal', methods=['GET'])
 def get_personal():
@@ -142,7 +150,9 @@ def get_personal():
     ]
     return jsonify(result)
 
-#Ruta obtener datos por ID
+# Ruta obtener datos por ID
+
+
 @main.route('/personal/<int:staff_id>', methods=['GET'])
 def get_personal_detail(staff_id):
     print("fetching details for staff_id", staff_id)
@@ -173,15 +183,18 @@ def get_personal_detail(staff_id):
     return jsonify(result)
 
 # Ruta para Eliminar un personal por id(DELETE)
+
+
 @main.route('/personal/<int:staff_id>', methods=['DELETE'])
 def delete_staff(staff_id):
     personal = Personal.query.get(staff_id)
     if personal is None:
         return jsonify({"message": "Personal no encontrado"}), 404
-    
+
     db.session.delete(personal)
     db.session.commit()
     return jsonify({"message": "Personal Eliminado con exito"}), 200
+
 
 @main.route('/personal/<int:staff_id>', methods=['PUT'])
 def update_personal(staff_id):
@@ -191,7 +204,7 @@ def update_personal(staff_id):
 
     # Datos del request
     data = request.get_json()
-    
+
     try:
         personal.staff_name = data['staff_name']
         personal.staff_rut = data['staff_rut']
@@ -208,13 +221,15 @@ def update_personal(staff_id):
 
 # SECCIÓN DE INVENTARIO
 
-#CATEGORIAS Y SUB CATEGORIAS
+# CATEGORIAS Y SUB CATEGORIAS
 # Ruta para obtener todas las categorías
 @main.route('/category', methods=['GET'])
 def get_categorias():
     categorias = Category.query.all()
-    result = [{"category_id": c.category_id, "category_name": c.category_name} for c in categorias]
+    result = [{"category_id": c.category_id,
+               "category_name": c.category_name} for c in categorias]
     return jsonify(result)
+
 
 @main.route('/subcategory/<int:category_id>', methods=['GET'])
 def get_subcategorias(category_id):
@@ -285,42 +300,59 @@ def get_equipo_detail(equipment_id):
     return jsonify(result)
 
 
+# Ruta ingresar Equipamiento
 @main.route('/equipment', methods=['POST'])
 def ingresar_equipo():
-    data = request.json
-    subcategory_id = data['subcategory_id']
-    cantidad = data['cantidad']
-    estado = data['estado']
-    equipment_name = data['equipment_name']
+    data = request.get_json()
 
-    # Obtener subcategoría para generar los códigos técnicos
-    subcategoria = Subcategory.query.get(subcategory_id)
+    subcategory_id = data.get('subcategory_id')
+    cantidad = int(data.get('cantidad'))
+    estado = data.get('estado')
+    equipment_name = data.get('equipment_name')
 
-    if not subcategoria:
-        return jsonify({"message": "Subcategoría no encontrada"}), 404
+    # buscar el ultimo codigo tecnico de la sub
+    last_equipment = Equipment.query.filter_by(
+        subcategory_id=subcategory_id).order_by(Equipment.tech_code.desc()).first()
 
-    # Obtener la cantidad actual de equipos de esa subcategoría para continuar la numeración
-    existing_equipments = Equipment.query.filter_by(subcategory_id=subcategory_id).count()
+    # obtener el prefijo de codigo tecnico
+    subcategory = Subcategory.query.filter_by(
+        subcategory_id=subcategory_id).first()
+    tech_prefix = subcategory.codigo_tecnico
 
-    # Crear nuevos registros de equipos
-    nuevos_equipos = []
-    existing_equipments = int(existing_equipments)
-    cantidad = int(cantidad)
-    for i in range(existing_equipments + 1, existing_equipments + cantidad + 1):
-        codigo_unico = f"{subcategoria.codigo_tecnico}-{i:03}"
-        nuevo_equipo = Equipment(
+    # Definir el próximo número a partir del último código encontrado
+    if last_equipment:
+        last_code = last_equipment.tech_code
+        if '-' in last_code:
+            try:
+                last_number = int(last_code.split('-')[1])
+                next_number = last_number + 1
+            except ValueError:
+                # Si el valor después del guion no es un número, empezamos con 1
+                next_number = 1
+        else:
+            # Si el último código no tiene el formato correcto, comenzamos desde 1
+            next_number = 1
+    else:
+        # Si no existe ningún equipo, comenzamos con el número 1
+        next_number = 1
+
+    # Insertar los nuevos equipos
+    new_equipments = []
+    for _ in range(cantidad):
+        tech_code = f"{tech_prefix}-{str(next_number).zfill(3)}"
+        new_equipment = Equipment(
             subcategory_id=subcategory_id,
-            tech_code=codigo_unico,
+            tech_code=tech_code,
             status_equipment=estado,
-            equipment_name = equipment_name
+            equipment_name=equipment_name
         )
-        nuevos_equipos.append(nuevo_equipo)
+        db.session.add(new_equipment)
+        new_equipments.append(new_equipment)
+        next_number += 1
 
-    # Añadir nuevos equipos a la base de datos
-    db.session.add_all(nuevos_equipos)
     db.session.commit()
 
-    return jsonify({"message": f"{cantidad} equipos ingresados exitosamente."}), 201
+    return jsonify({"mensaje": "Equipos ingresados exitosamente", "equipos": [e.tech_code for e in new_equipments]})
 
 
 @main.route('/equipment/<int:equipment_id>', methods=['DELETE'])
@@ -328,7 +360,7 @@ def delete_equipment(equipment_id):
     equipment = Equipment.query.get(equipment_id)
     if equipment is None:
         return jsonify({"message": "equipment no encontrado"}), 404
-    
+
     db.session.delete(equipment)
     db.session.commit()
     return jsonify({"message": "equipment Eliminado con exito"}), 200
@@ -337,5 +369,6 @@ def delete_equipment(equipment_id):
 @main.route('/Clients', methods=['GET'])
 def get_client():
     client = Cliente.query.all()
-    client_list = [{"client_id": client.client_id, "client_name": client.client_name} for client in client]
+    client_list = [{"client_id": client.client_id,
+                    "client_name": client.client_name} for client in client]
     return jsonify(client_list)
