@@ -54,6 +54,7 @@ function StaffCreate() {
       const response = await axios.post('http://127.0.0.1:5000/personal', nuevoPersonal);
       
       setMensaje(response.data.mensaje)
+      alert("Personal creado con exito.")
 
       //Limpiar el formulario
       setStaffName('');
@@ -62,6 +63,9 @@ function StaffCreate() {
       setStaffPhone('');
       setStaffAddress('');
       setRoles([])
+
+      //Redirigir a listado
+      navigate('/personal')
     } catch (error){
         console.error('Error al agregar el personal', error);
         setMensaje('Hubo un error al agregar el personal');

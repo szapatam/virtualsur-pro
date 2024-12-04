@@ -47,12 +47,15 @@ const handleSubmit = async (e) => {
 
       const response = await axios.post('http://127.0.0.1:5000/equipment', nuevoEquipo);
       setMensaje(response.data.message);
+      alert('Se ha creado el Equipamiento con exito.')
       // Limpiar el formulario
       setSelectedCategory('');
       setSelectedSubcategory('');
       setCantidad('');
       setEquipmentName('');
       setEstado('Operativa');
+
+      navigate('/InventoryList')
   } catch (error) {
       console.error('Error al ingresar el equipo:', error);
       setMensaje('Hubo un error al ingresar el equipo.');

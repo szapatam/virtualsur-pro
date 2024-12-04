@@ -1,75 +1,79 @@
 import React, { useState, useEffect } from 'react';
 import './EquipmentDetail.css';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useViewTransitionState } from 'react-router-dom';
 import axios from 'axios';
 
 function EquipmentDetail() {
-  const { equipment_id } = useParams(); // Obtener el id del equipo desde los parámetros de la URL
+  const { equipmentId } = useParams(); // Obtener el id del equipo desde los parámetros de la URL
   const navigate = useNavigate();
 
   // Estados para almacenar datos del equipo y categorías
-  const [category, setCategory] = useState('');
-  const [subcategory, setSubcategory] = useState('');
-  const [name, setName] = useState('');
-  const [status, setStatus] = useState('');
+  const [equipmentName, setEquipmentName] = useState('');
+  const [techCode, settechCode] = useState('');
+  const [statusEquipment, setstatusEquipment] = useState('');
+  //estado para cateogria y subcategoria
   const [categories, setCategories] = useState([]);
-  const [subcategories, setSubcategories] = useState([]);
-  // Fetch para obtener detalles del equipo y listas de categorías
-  useEffect(() => {
-    const fetchEquipmentDetails = async () => {
+  const [subcategories, setSubCategories] = useState([]);
+  const [categoryId, setCategoryId] = useState('');
+  const [subcategoryId, setSubcategoryId] = useState('');
+  const {mensaje, setMensaje} = useState('');
+
+  useEffect(() =>{
+    const fetchInitialData = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:5000/equipment/${equipment_id}`);
+        const response = await axios.get(`http://127.0.0.1:5000/equipment/${equipmentId}`);
         const data = response.data;
 
-        // Actualizar estados con los datos recibidos
-        setCategory(data.category_id);
-        setSubcategory(data.subcategory_id);
-        setName(data.equipment_name);
-        setStatus(data.status_equipment);
-      } catch (error) {
-        console.error('Hubo un error al obtener los detalles del equipo:', error);
+        // Rellenan los estados con los datos
+        setEquipmentName(data.equipment_name);
+        setSubcategoryId(data.subcategory_id);
+        settechCode(data.tech_code);
+        setstatusEquipment(data.status_equipment);
+
+        //Inicializa categoria y subcategoria con el valor actual
+        setCategoryId(data.category_id);
+        setSubcategoryId(data.subcategory_id);
+
+        //Solicitar categoria
+        const categoriesResponse = await axios.get('http://127.0.0.1:5000/category')
+        setCategories(categoriesResponse.data);
+
+            // Solicitar las subcategorías
+            const subcategoriesResponse = await axios.get('http://127.0.0.1:5000/subcategory');
+            setSubCategories(subcategoriesResponse.data);
+      }catch (error){
+        console.error("hubo un error al obtener los detalles del equipamiento", error);
+        alert("Hubo un error al obtener los detalles del equipamiento");
       }
     };
 
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get('http://127.0.0.1:5000/category');
-        setCategories(response.data);
-      } catch (error) {
-        console.error('Hubo un error al obtener las categorías:', error);
-      }
-    };
+    fetchInitialData();
+  }, [equipmentId])
 
-    const fetchSubcategories = async () => {
-      try {
-        const response = await axios.get('http://127.0.0.1:5000/subcategory');
-        setSubcategories(response.data);
-      } catch (error) {
-        console.error('Hubo un error al obtener las subcategorías:', error);
-      }
-    };
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
 
-    fetchEquipmentDetails();
-    fetchCategories();
-    fetchSubcategories();
-  }, [equipment_id]);
-
-  // Manejar el guardado de cambios
-  const handleSaveChanges = async () => {
     try {
-      const updatedEquipment = {
-        category_id: category,
-        subcategory_id: subcategory,
-        equipment_name: name,
-        status_equipment: status,
-      };
+        // Datos a actualizar en el equipamiento
+        const updatedEquipment = {
+            subcategory_id: subcategoryId,
+            status_equipment: statusEquipment,
+            equipment_name: equipmentName,
+        };
 
-      await axios.put(`http://127.0.0.1:5000/equipment/${equipment_id}`, updatedEquipment);
-      alert('Cambios guardados exitosamente');
+        // Realiza la solicitud PUT al backend con el ID del equipamiento
+        const response = await axios.put(`http://127.0.0.1:5000/equipment/${equipmentId}`, updatedEquipment);
+
+        alert('Equipamiento actualizado con éxito.');
+        navigate('/InventoryList');  // Navegar de vuelta a la lista de inventario
     } catch (error) {
-      console.error('Hubo un error al guardar los cambios:', error);
+        console.error('Error al actualizar el equipamiento:', error);
+        setMensaje('Hubo un error al actualizar el equipamiento.');
     }
-  };
+};
+
+
+
 
   return (
     <div className="equipment-detail-container">
@@ -80,40 +84,46 @@ function EquipmentDetail() {
 
       <div className="equipment-detail-info">
         <div className="equipment-section">
-          <form className="new-equipment-form">
+          <form className="new-equipment-form" onSubmit={handleUpdateSubmit}>
             <fieldset>
               <legend>Editar Equipamiento</legend>
               <div>
                 <label>Categoría:</label>
-                <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                  <option value="">Seleccione una categoría</option>
-                  {categories.map((cat) => (
-                    <option key={cat.category_id} value={cat.category_id}>
-                      {cat.category_name}
+                <select value={categoryId} onChange={(e) => {
+                  const selectedCategoryId = e.target.value;
+                  setCategoryId(selectedCategoryId);
+                  //filtrar las subcategorias 
+                  setSubCategories(subcategories.filter((subcat) => subcat.category_id === parseInt(selectedCategoryId)));
+                  //Limpia la subcategoría actual
+                  setSubcategoryId('');
+                }}>
+                  <option value="">Seleccione una categorías</option>
+                  {categories.map((category) => (
+                    <option key={category.category_id} value={category.category_id}>
+                      {category.category_name}
                     </option>
                   ))}
                 </select>
               </div>
               <div>
                 <label>Subcategoría:</label>
-                <select value={subcategory} onChange={(e) => setSubcategory(e.target.value)}>
-                  <option value="">Seleccione una subcategoría</option>
-                  {subcategories
-                    .filter((sub) => sub.category_id === parseInt(category))
-                    .map((sub) => (
-                      <option key={sub.subcategory_id} value={sub.subcategory_id}>
-                        {sub.subcategory_name}
-                      </option>
-                    ))}
+                <select value={subcategoryId} onChange={(e) => setSubcategoryId(e.target.value)}>
+                  <option value="">Seleccione una subcategoria</option>
+                  {subcategories.filter((subcat) => subcat.category_id === parseInt(categoryId))
+                  .map((subcategory) => (
+                    <option key={subcategory.subcategory_id} value={subcategory.subcategory_id}>
+                      {subcategory.subcategory_name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label>Nombre del Equipo:</label>
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+                <input type="text" value={equipmentName} onChange={(e) => setEquipmentName(e.target.value)}/>
               </div>
               <div>
                 <label>Estado:</label>
-                <select value={status} onChange={(e) => setStatus(e.target.value)}>
+                <select>
                   <option value="Operativa">Operativa</option>
                   <option value="No Operativa">No Operativa</option>
                   <option value="En Mantención">En Mantención</option>
@@ -121,7 +131,7 @@ function EquipmentDetail() {
               </div>
             </fieldset>
             <div className='save-button-container'>
-              <button type="button" onClick={handleSaveChanges} className="submit-button">Guardar Cambios</button>
+              <button type="submit" className="submit-button">Guardar Cambios</button>
             </div>
           </form>
         </div>

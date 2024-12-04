@@ -46,6 +46,8 @@ function ClientCreate() {
             setClientAddress('');
             setClientRut('');
             setClientPhone('');
+
+            navigate('/clientes')
         } catch (error) {
             console.error('Error al agregar el cliente:', error);
             setMensaje('Hubo un error al agregar el cliente.');

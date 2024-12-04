@@ -230,6 +230,14 @@ def get_categorias():
                "category_name": c.category_name} for c in categorias]
     return jsonify(result)
 
+@main.route('/subcategory', methods=['GET'])
+def get_subcategorias_all():
+    subcategorias = Subcategory.query.all()
+    result = [{"category_id": c.category_id,
+               "subcategory_name": c.subcategory_name,
+               "subcategory_id": c.subcategory_id,
+               "tech_code": c.codigo_tecnico} for c in subcategorias]
+    return jsonify(result)
 
 @main.route('/subcategory/<int:category_id>', methods=['GET'])
 def get_subcategorias(category_id):
@@ -278,24 +286,18 @@ def obtener_equipos():
 
 # RUTA: Obtener equipo por ID
 @main.route('/equipment/<int:equipment_id>', methods=['GET'])
-def get_equipo_detail(equipment_id):
-    equipo = Equipment.query.join(Subcategory, Equipment.subcategory_id == Subcategory.subcategory_id).add_columns(
-        Equipment.equipment_id,
-        Equipment.equipment_name,
-        Equipment.tech_code,
-        Equipment.status_equipment,
-        Subcategory.subcategory_name.label("subcategory_name")
-    ).filter(Equipment.equipment_id == equipment_id).first()
+def get_equipment_detail(equipment_id):
+    equipment = Equipment.query.filter_by(equipment_id=equipment_id).first()
 
-    if not equipo:
+    if equipment is None:
         return jsonify({"message": "Equipo no encontrado"}), 404
-
+    
     result = {
-        "equipment_id": equipo.equipment_id,
-        "equipment_name": equipo.equipment_name,
-        "tech_code": equipo.tech_code,
-        "status_equipment": equipo.status_equipment,
-        "subcategory": equipo.subcategory_name
+        "equipment_id": equipment.equipment_id,
+        "subcategory_id": equipment.subcategory_id,
+        "tech_code": equipment.tech_code,
+        "status_equipment": equipment.status_equipment,
+        "equipment_name": equipment.equipment_name
     }
     return jsonify(result)
 
@@ -353,6 +355,58 @@ def ingresar_equipo():
     db.session.commit()
 
     return jsonify({"mensaje": "Equipos ingresados exitosamente", "equipos": [e.tech_code for e in new_equipments]})
+
+
+#Metodo PUT para actualizar equipamiento
+# Ruta actualizar Equipamiento
+@main.route('/equipment/<int:equipment_id>', methods=['PUT'])
+def actualizar_equipo(equipment_id):
+    data = request.get_json()
+
+    equipment = Equipment.query.get(equipment_id)
+
+    if not equipment:
+        return jsonify({"message": "Equipamiento no encontrado"}), 404
+
+    # Verificar si se ha cambiado la subcategoría
+    new_subcategory_id = data.get('subcategory_id', equipment.subcategory_id)
+
+    if new_subcategory_id != equipment.subcategory_id:
+        # Obtener el último código técnico de la nueva subcategoría
+        last_equipment = Equipment.query.filter_by(
+            subcategory_id=new_subcategory_id).order_by(Equipment.tech_code.desc()).first()
+
+        # Obtener el prefijo del código técnico de la nueva subcategoría
+        subcategory = Subcategory.query.filter_by(subcategory_id=new_subcategory_id).first()
+        tech_prefix = subcategory.codigo_tecnico
+
+        # Definir el próximo número a partir del último código encontrado
+        if last_equipment:
+            last_code = last_equipment.tech_code
+            if '-' in last_code:
+                try:
+                    last_number = int(last_code.split('-')[1])
+                    next_number = last_number + 1
+                except ValueError:
+                    # Si el valor después del guion no es un número, empezamos con 1
+                    next_number = 1
+            else:
+                next_number = 1
+        else:
+            next_number = 1
+
+        # Actualizar el código técnico
+        new_tech_code = f"{tech_prefix}-{str(next_number).zfill(3)}"
+        equipment.tech_code = new_tech_code
+
+    # Actualizar otros campos del equipo
+    equipment.subcategory_id = new_subcategory_id
+    equipment.status_equipment = data.get('status_equipment', equipment.status_equipment)
+    equipment.equipment_name = data.get('equipment_name', equipment.equipment_name)
+
+    db.session.commit()
+
+    return jsonify({"message": "Equipamiento actualizado exitosamente."}), 200
 
 
 @main.route('/equipment/<int:equipment_id>', methods=['DELETE'])
