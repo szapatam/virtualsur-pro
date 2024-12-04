@@ -28,35 +28,39 @@ function InventoryList() {
       console.error('Equipment ID is undefined')
     }
   }
-
-  const handleDeleteEquipment = (equipmentId) => {
+  
+  const fetchEquipos = async () => {
     try {
-      console.log(`http://127.0.0.1:5000/equipment/${equipmentId}`)
-    axios.delete(`http://127.0.0.1:5000/equipment/${equipmentId}`);
-    setLoading(false);
+        const response = await axios.get('http://127.0.0.1:5000/equipment');
+        setEquipos(response.data);
+        setLoading(false);
     } catch (error) {
-      setError("Hubo un error al borrar:", error);
+      setError("Hubo un error al obtener el inventario:", error);
         setLoading(false);
     }
+  };
 
-  }
-  
   // Efecto para obtener el listado de equipos al montar el componente
   useEffect(() => {
-      const fetchEquipos = async () => {
-          try {
-              const response = await axios.get('http://127.0.0.1:5000/equipment');
-              setEquipos(response.data);
-              setLoading(false);
-          } catch (error) {
-            setError("Hubo un error al obtener el inventario:", error);
-              setLoading(false);
-          }
-        };
-
-        fetchEquipos();
+    fetchEquipos();
     }, []);
 
+
+     //Eliminar Equipamiento
+  const handleDeleteEquipment = (equipmentId) => {
+    //solicitud DELETE al backend
+    axios.delete(`http://127.0.0.1:5000/equipment/${equipmentId}`)
+    .then(response => {
+      //Eliminar equipamiento del estado para actualizar la lista
+      setEquipos(equipos.filter(equipo => equipo.equipment_id !== equipmentId));
+      alert('Equipamiento Eliminado con exito');
+    })
+    .catch(error =>{
+      console.error('Error al eliminar equipamiento', error);
+      alert('Hubo un error al eliminar equipamiento')
+    })
+    
+  }
 
 
   return (
