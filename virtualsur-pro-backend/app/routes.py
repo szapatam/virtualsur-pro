@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from .models import Cliente, Personal, Role, Equipment, Category, Subcategory
+from .models import Cliente, Personal, Role, Equipment, Category, Subcategory, Contract
 from . import db
 
 main = Blueprint('main', __name__)
@@ -426,3 +426,59 @@ def get_client():
     client_list = [{"client_id": client.client_id,
                     "client_name": client.client_name} for client in client]
     return jsonify(client_list)
+
+
+# SECCIÓN DE CONTRATOS
+
+@main.route('/contracts', methods=['POST'])
+def create_contract():
+    data = request.get_json()
+
+    # Agregar un print para verificar los datos recibidos
+    print("Datos recibidos:", data)
+
+    # Generar el código único para el contrato
+    new_contract_code = Contract.generate_contract_code()
+
+    try:
+        # Extraer datos con validación de tipo
+        client_id = data.get('client_id')
+        event_name = data.get('event_name')
+        contract_start_date = data.get('contract_start_date')
+        event_execution_date = data.get('event_execution_date')
+        event_location = data.get('event_location')
+        square_meters = float(data['square_meters'])  # Convertir a float
+        square_meter_value = float(data['square_meter_value'])  # Convertir a float
+        additional_cost = float(data.get('additional_cost', 0))  # Convertir a float
+
+        # Calcular el costo total
+        total_cost = (square_meters * square_meter_value) + additional_cost
+
+        # Crear el objeto de contrato
+        new_contract = Contract(
+            contract_code=new_contract_code,
+            client_id=client_id,
+            event_name=event_name,
+            contract_start_date=contract_start_date,
+            event_execution_date=event_execution_date,
+            event_location=event_location,
+            square_meters=square_meters,
+            square_meter_value=square_meter_value,
+            additional_cost=additional_cost,
+            total_cost=total_cost
+        )
+
+        # Agregar el nuevo contrato a la sesión de base de datos
+        db.session.add(new_contract)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Contrato creado con éxito",
+            "contract_code": new_contract.contract_code,
+            "contract_id": new_contract.contract_id
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print("Error al crear el contrato:", str(e))
+        return jsonify({"error": str(e)}), 400
