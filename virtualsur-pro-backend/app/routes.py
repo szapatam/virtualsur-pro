@@ -749,7 +749,8 @@ def get_available_equipments():
             Equipment.subcategory_id,
             # pylint: disable=not-callable
             func.group_concat(Equipment.tech_code).label("tech_codes"),
-            func.group_concat(Equipment.equipment_name).label("equipment_names")
+            func.group_concat(Equipment.equipment_name).label("equipment_names"),
+            func.group_concat(Equipment.equipment_id).label("equipment_ids")
         ).filter(Equipment.status_equipment == "Operativo")\
          .group_by(Equipment.subcategory_id)\
          .subquery()
@@ -761,7 +762,8 @@ def get_available_equipments():
             # pylint: disable=not-callable
             func.coalesce(subquery_count.c.available_count, 0).label("available_count"),
             func.coalesce(subquery_details.c.tech_codes, "").label("tech_codes"),
-            func.coalesce(subquery_details.c.equipment_names, "").label("equipment_names")
+            func.coalesce(subquery_details.c.equipment_names, "").label("equipment_names"),
+            func.coalesce(subquery_details.c.equipment_ids, "").label("equipment_ids")  # Incluir equipment_ids
         ).outerjoin(subquery_count, Subcategory.subcategory_id == subquery_count.c.subcategory_id)\
          .outerjoin(subquery_details, Subcategory.subcategory_id == subquery_details.c.subcategory_id)\
          .group_by(
@@ -769,7 +771,8 @@ def get_available_equipments():
              Subcategory.subcategory_name,
              subquery_count.c.available_count,
              subquery_details.c.tech_codes,
-             subquery_details.c.equipment_names
+             subquery_details.c.equipment_names,
+             subquery_details.c.equipment_ids
             # pylint: disable=not-callable
          ).all()
 
@@ -780,7 +783,8 @@ def get_available_equipments():
                 "subcategory_name": equipment.subcategory_name,
                 "available_count": equipment.available_count,
                 "tech_codes": equipment.tech_codes.split(",") if equipment.tech_codes else [],
-                "equipment_names": equipment.equipment_names.split(",") if equipment.equipment_names else []
+                "equipment_names": equipment.equipment_names.split(",") if equipment.equipment_names else [],
+                "equipment_ids": equipment.equipment_ids.split(",") if equipment.equipment_ids else []
             }
             for equipment in available_equipments
         ]
@@ -832,3 +836,38 @@ def reserve_equipment():
         db.session.rollback()
         print("Error reservando equipos:", e)
         return jsonify({"error": str(e)}), 500
+
+
+@main.route('/contracts/<int:contract_id>/remove_equipment/<int:equipment_id>', methods=['DELETE'])
+def remove_equipment(contract_id, equipment_id):
+    print("Removing equipment with ID:", equipment_id)  # Depuración
+    print("For contract ID:", contract_id)  # Depuración
+    try:
+        # Buscar la relación entre el contrato y el equipamiento
+        contract_equipment = ContractEquipment.query.filter_by(
+            contract_id=contract_id, equipment_id=equipment_id
+        ).first()
+
+        if not contract_equipment:
+            return jsonify({"error": "Relación contrato-equipamiento no encontrada"}), 404
+
+        # Buscar el equipamiento en la tabla de equipamientos
+        equipment = Equipment.query.filter_by(equipment_id=equipment_id).first()
+
+        if not equipment:
+            return jsonify({"error": "Equipamiento no encontrado"}), 404
+
+        # Cambiar el estado del equipamiento a "Operativa"
+        equipment.status_equipment = "Operativo"
+
+        # Eliminar la relación contrato-equipamiento
+        db.session.delete(contract_equipment)
+
+        # Guardar cambios en la base de datos
+        db.session.commit()
+
+        return jsonify({"message": "Equipamiento eliminado del contrato y marcado como operativo"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400

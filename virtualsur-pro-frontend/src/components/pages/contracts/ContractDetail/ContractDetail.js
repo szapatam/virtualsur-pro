@@ -63,6 +63,7 @@ function ContractDetail() {
                 subcategory_name: selectedEquipment.subcategory_name,
                 quantity: selectedQuantity,
                 subcategory_id: selectedSubcategory,
+                equipment_id: selectedEquipment.equipment_id,
             };
     
             setContractEquipments([...contractEquipments, newAssignedEquipment]);
@@ -74,25 +75,42 @@ function ContractDetail() {
         }
     };
 
-    const handleAssignQuantity = (subcategoryId, quantity) => {
-        setContractEquipments((prevEquipments) => {
-            const updatedEquipments = prevEquipments.filter(
-                (equipment) => equipment.subcategory_id !== subcategoryId
-            );
-            return [
-                ...updatedEquipments,
-                { subcategory_id: subcategoryId, quantity },
-            ];
-        });
+    const handleAssignQuantity = async (subcategoryId, quantity) => {
+        if (!quantity || quantity <= 0) return;
     
-        // Actualiza el input localmente
-        setAvailableEquipments((prevEquipments) =>
-            prevEquipments.map((equipment) =>
-                equipment.subcategory_id === subcategoryId
-                    ? { ...equipment, quantity }
-                    : equipment
-            )
+        const selectedEquipment = availableEquipments.find(
+            (equipment) => equipment.subcategory_id === subcategoryId
         );
+    
+        if (selectedEquipment) {
+            const idsToAssign = selectedEquipment.equipment_ids.slice(0, quantity); // Seleccionar los IDs necesarios
+    
+            setContractEquipments((prevEquipments) => [
+                ...prevEquipments,
+                ...idsToAssign.map((id, index) => ({
+                    tech_code: selectedEquipment.tech_codes[index],
+                    equipment_name: selectedEquipment.equipment_names[index],
+                    subcategory_name: selectedEquipment.subcategory_name,
+                    equipment_id: id, // Asegúrate de incluir el equipment_id
+                    quantity: 1, // Cada equipo es individual
+                })),
+            ]);
+    
+            // Actualizar los disponibles
+            setAvailableEquipments((prevEquipments) =>
+                prevEquipments.map((equipment) =>
+                    equipment.subcategory_id === subcategoryId
+                        ? {
+                            ...equipment,
+                            available_count: equipment.available_count - quantity,
+                            equipment_ids: equipment.equipment_ids.slice(quantity),
+                            tech_codes: equipment.tech_codes.slice(quantity),
+                            equipment_names: equipment.equipment_names.slice(quantity),
+                        }
+                        : equipment
+                )
+            );
+        }
     };
     
     
@@ -162,16 +180,22 @@ function ContractDetail() {
     };
 
 
-    const handleRemoveEquipment = (techCode) => {
-    setContractEquipments((prevEquipments) =>
-        prevEquipments.filter((equipment) => equipment.tech_code !== techCode)
-    );
-
-    setRemovedEquipments((prevRemoved) =>[
-        ...prevRemoved,
-        techCode,
-    ]);
-};
+    const handleRemoveEquipment = async (equipmentId) => {
+        try {
+            // Llama al backend para actualizar el estado del equipo
+            await axios.delete(`http://127.0.0.1:5000/contracts/${contract.contract_id}/remove_equipment/${equipmentId}`);
+    
+            // Actualiza el estado local para eliminar el equipo
+            setContractEquipments((prevEquipments) =>
+                prevEquipments.filter((equipment) => equipment.equipment_id !== equipmentId)
+            );
+        } catch (error) {
+            console.error("Error al eliminar el equipo:", error);
+            alert("Hubo un error al eliminar el equipo.");
+        }
+    };
+    
+    
     
 
 // Modal para asignar equipamiento
@@ -230,7 +254,7 @@ const Modal = ({
                         </tr>
                     </thead>
                     <tbody>
-                        {availableEquipments.map((equipment) => (
+                        {availableEquipments.map((equipment, index) => (
                             <tr key={equipment.subcategory_id}>
                                 <td>{equipment.subcategory_name}</td>
                                 <td>{equipment.available_count}</td>
@@ -251,6 +275,8 @@ const Modal = ({
                                                     : eq
                                             )
                                         );
+
+                                        handleAssignQuantity(equipment.subcategory_id, quantity);
                                     }}
                                 />
                                 </td>
@@ -351,7 +377,7 @@ const Modal = ({
                                 <td>{equipment.subcategory_name || 'N/A'}</td>
                                 <td>
                             <button
-                              className="remove-equipment-button" onClick={() => handleRemoveEquipment(equipment.tech_code)}
+                              className="remove-equipment-button" onClick={() => handleRemoveEquipment(equipment.equipment_id)}
                             >
                                  Eliminar
                             </button>
@@ -431,6 +457,7 @@ const Modal = ({
                     tech_code: equipment.tech_code,
                     equipment_name: equipment.equipment_name,
                     subcategory_name: equipment.subcategory_name,
+                    equipment_id: equipment.equipment_id,
                     quantity: equipment.quantity,
                 })),
             ]);
