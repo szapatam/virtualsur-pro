@@ -123,10 +123,11 @@ function EquipmentDetail() {
               </div>
               <div>
                 <label>Estado:</label>
-                <select>
-                  <option value="Operativa">Operativa</option>
-                  <option value="No Operativa">No Operativa</option>
+                <select  value={statusEquipment} onChange={(e) => setstatusEquipment(e.target.value)}>
+                  <option value="Operativo">Operativo</option>
+                  <option value="No Operativo">No Operativo</option>
                   <option value="En Mantención">En Mantención</option>
+                  <option value="Asignado">Asignado</option>
                 </select>
               </div>
             </fieldset>

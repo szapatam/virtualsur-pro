@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
-from .models import Cliente, Personal, Role, Equipment, Category, Subcategory, Contract
+from sqlalchemy import func
+from .models import Cliente, Personal, Role, Equipment, Category, Subcategory, Contract, ContractEquipment
 from . import db
 
 main = Blueprint('main', __name__)
@@ -482,3 +483,288 @@ def create_contract():
         db.session.rollback()
         print("Error al crear el contrato:", str(e))
         return jsonify({"error": str(e)}), 400
+
+
+@main.route('/contracts', methods=['GET'])
+def get_contracts():
+    contracts = Contract.query.all()
+    result = [
+        {
+            "contract_id": c.contract_id,
+            "contract_code": c.contract_code,
+            "client_name": c.client.client_name,  # relación con cliente
+            "event_name": c.event_name,
+            "contract_start_date": c.contract_start_date,
+            "event_execution_date": c.event_execution_date,
+            "event_location": c.event_location,
+            "square_meters": c.square_meters,
+            "square_meter_value": c.square_meter_value,
+            "total_cost": c.total_cost
+        }
+        for c in contracts
+    ]
+    return jsonify(result)
+
+@main.route('/contracts/<int:contract_id>', methods=['GET'])
+def get_contract_details(contract_id):
+    try:
+        contract = Contract.query.join(Cliente, Contract.client_id == Cliente.client_id).add_columns(
+            Contract.contract_id,
+            Contract.contract_code,
+            Cliente.client_name.label("client_name"),
+            Contract.event_name,
+            Contract.contract_start_date,
+            Contract.event_execution_date,
+            Contract.event_location,
+            Contract.square_meters,
+            Contract.square_meter_value,
+            Contract.additional_cost,
+            Contract.total_cost
+        ).filter(Contract.contract_id == contract_id).first()
+
+        if not contract:
+            return jsonify({"message": "Contrato no encontrado"}), 404
+
+        result = {
+            "contract_id": contract.contract_id,
+            "contract_code": contract.contract_code,
+            "client_name": contract.client_name,
+            "event_name": contract.event_name,
+            "contract_start_date": str(contract.contract_start_date),
+            "event_execution_date": str(contract.event_execution_date),
+            "event_location": contract.event_location,
+            "square_meters": contract.square_meters,
+            "square_meter_value": contract.square_meter_value,
+            "additional_cost": contract.additional_cost,
+            "total_cost": contract.total_cost
+        }
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+    
+@main.route('/contracts/<int:contract_id>', methods=['PUT'])
+def update_contract(contract_id):
+    try:
+        # Obtener los datos enviados por el frontend
+        data = request.get_json()
+        print(data)
+
+        # Buscar el contrato existente en la base de datos
+        contract = Contract.query.filter_by(contract_id=contract_id).first()
+
+        # Si no se encuentra el contrato, retornar un error
+        if not contract:
+            return jsonify({"message": "Contrato no encontrado"}), 404
+
+        # Actualizar los campos del contrato con los nuevos datos
+        contract.client_id = data.get('client_id', contract.client_id)
+        contract.event_name = data.get('event_name', contract.event_name)
+        contract.contract_start_date = data.get('contract_start_date', contract.contract_start_date)
+        contract.event_execution_date = data.get('event_execution_date', contract.event_execution_date)
+        contract.event_location = data.get('event_location', contract.event_location)
+        contract.square_meters = data.get('square_meters', contract.square_meters)
+        contract.square_meter_value = data.get('square_meter_value', contract.square_meter_value)
+        contract.additional_cost = data.get('additional_cost', contract.additional_cost)
+        
+        # Recalcular el costo total
+        contract.total_cost = (
+            float(contract.square_meters) * float(contract.square_meter_value)
+        ) + float(contract.additional_cost)
+
+        # Guardar los cambios en la base de datos
+        db.session.commit()
+
+        return jsonify({"message": "Contrato actualizado con éxito"}), 200
+
+    except Exception as e:
+        # Manejar cualquier error y retornar un mensaje adecuado
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+
+@main.route('/contracts/<int:contract_id>', methods=['DELETE'])
+def delete_contract(contract_id):
+    try:
+        contract = Contract.query.get(contract_id)
+
+        if not contract:
+            return jsonify({"message": "Contrato no encontrado"}), 404
+
+        db.session.delete(contract)
+        db.session.commit()
+
+        return jsonify({"message": "Contrato eliminado con éxito"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+    
+# SECCIÓN EQUIPAMIENTO - CONTRATO
+@main.route('/contracts/<int:contract_id>/assign_equipment', methods=['POST'])
+def assign_equipment(contract_id):
+    data = request.get_json()
+    subcategory_id = data.get('subcategory_id')
+    quantity = data.get('quantity')
+
+    # Validar datos
+    if not subcategory_id or not quantity or quantity <= 0:
+        return jsonify({"error": "Datos inválidos"}), 400
+
+    # Buscar equipos disponibles
+    available_equipments = Equipment.query.filter_by(
+        subcategory_id=subcategory_id, status_equipment="Operativa"
+    ).order_by(Equipment.tech_code).limit(quantity).all()
+
+    if len(available_equipments) < quantity:
+        return jsonify({"error": "No hay suficientes equipos disponibles"}), 400
+
+    # Asignar equipos
+    assigned_equipments = []
+    for equipment in available_equipments:
+        equipment.status_equipment = "Asignado"  # Cambiar estado a 'Asignado'
+        db.session.add(equipment)
+
+        # Crear la relación entre contrato y equipo
+        contract_equipment = ContractEquipment(
+            contract_id=contract_id, equipment_id=equipment.equipment_id
+        )
+        db.session.add(contract_equipment)
+
+        # Añadir equipo asignado a la respuesta
+        assigned_equipments.append({
+            "tech_code": equipment.tech_code,
+            "equipment_name": equipment.equipment_name
+        })
+
+    # Guardar cambios
+    db.session.commit()
+
+    return jsonify({"assigned_equipments": assigned_equipments}), 200
+
+
+@main.route('/contracts/<int:contract_id>/equipments', methods=['GET'])
+def get_assigned_equipments(contract_id):
+    try:
+        assigned_equipments = db.session.query(
+            ContractEquipment, Equipment
+        ).join(Equipment, ContractEquipment.equipment_id == Equipment.equipment_id).filter(
+            ContractEquipment.contract_id == contract_id
+        ).all()
+
+        result = [
+            {
+                "equipment_id": equipment.equipment_id,
+                "tech_code": equipment.tech_code,
+                "equipment_name": equipment.equipment_name,
+                "subcategory_id": equipment.subcategory_id,
+                "status_equipment": equipment.status_equipment
+            }
+            for _, equipment in assigned_equipments
+        ]
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"message": "Error al obtener los equipamientos asignados.", "error": str(e)}), 500
+
+
+#MODAL
+@main.route('/equipment/available', methods=['GET'])
+def get_available_equipments():
+    try:
+        # Subconsulta para contar equipos disponibles por subcategoría
+        subquery_count = db.session.query(
+            Equipment.subcategory_id,
+            # pylint: disable=not-callable
+            func.count(Equipment.equipment_id).label("available_count")
+        ).filter(Equipment.status_equipment == "Operativo")\
+         .group_by(Equipment.subcategory_id)\
+         .subquery()
+
+        # Subconsulta para obtener los equipos disponibles por subcategoría
+        subquery_details = db.session.query(
+            Equipment.subcategory_id,
+            # pylint: disable=not-callable
+            func.group_concat(Equipment.tech_code).label("tech_codes"),
+            func.group_concat(Equipment.equipment_name).label("equipment_names")
+        ).filter(Equipment.status_equipment == "Operativo")\
+         .group_by(Equipment.subcategory_id)\
+         .subquery()
+
+        # Consulta principal para unir subcategorías, conteo y detalles
+        available_equipments = db.session.query(
+            Subcategory.subcategory_id,
+            Subcategory.subcategory_name,
+            # pylint: disable=not-callable
+            func.coalesce(subquery_count.c.available_count, 0).label("available_count"),
+            func.coalesce(subquery_details.c.tech_codes, "").label("tech_codes"),
+            func.coalesce(subquery_details.c.equipment_names, "").label("equipment_names")
+        ).outerjoin(subquery_count, Subcategory.subcategory_id == subquery_count.c.subcategory_id)\
+         .outerjoin(subquery_details, Subcategory.subcategory_id == subquery_details.c.subcategory_id)\
+         .group_by(
+             Subcategory.subcategory_id,
+             Subcategory.subcategory_name,
+             subquery_count.c.available_count,
+             subquery_details.c.tech_codes,
+             subquery_details.c.equipment_names
+            # pylint: disable=not-callable
+         ).all()
+
+        # Construcción del resultado en JSON
+        results = [
+            {
+                "subcategory_id": equipment.subcategory_id,
+                "subcategory_name": equipment.subcategory_name,
+                "available_count": equipment.available_count,
+                "tech_codes": equipment.tech_codes.split(",") if equipment.tech_codes else [],
+                "equipment_names": equipment.equipment_names.split(",") if equipment.equipment_names else []
+            }
+            for equipment in available_equipments
+        ]
+
+        return jsonify(results)
+
+    except Exception as e:
+        print(f"Error fetching available equipments: {str(e)}")
+        return jsonify({"error": "Unable to fetch available equipments"}), 500
+
+
+@main.route('/equipment/reserve', methods=['POST'])
+def reserve_equipment():
+    try:
+        data = request.json  # Esperamos un array de subcategorías con cantidades
+        reserved_equipments = []  # Lista para almacenar los equipos reservados
+
+        for item in data:
+            subcategory_id = item.get('subcategory_id')
+            quantity_to_reserve = item.get('quantity')
+
+            if not subcategory_id or not quantity_to_reserve:
+                continue  # Saltamos si falta algún dato
+
+            # Obtener equipos disponibles por subcategoría
+            available_equipments = Equipment.query.filter_by(
+                subcategory_id=subcategory_id,
+                status_equipment='Operativo'
+            ).limit(quantity_to_reserve).all()
+
+            if len(available_equipments) < quantity_to_reserve:
+                return jsonify({"error": f"No hay suficientes equipos disponibles para la subcategoría ID {subcategory_id}"}), 400
+
+            # Actualizar estado de los equipos seleccionados y añadirlos a la lista
+            for equipment in available_equipments:
+                reserved_equipments.append({
+                    "tech_code": equipment.tech_code,
+                    "equipment_name": equipment.equipment_name,
+                    "subcategory_name": equipment.subcategory.subcategory_name
+                })
+
+        # Confirmar cambios en la base de datos
+        db.session.commit()
+
+        # Devolver los equipos reservados
+        return jsonify(reserved_equipments), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print("Error reservando equipos:", e)
+        return jsonify({"error": str(e)}), 500

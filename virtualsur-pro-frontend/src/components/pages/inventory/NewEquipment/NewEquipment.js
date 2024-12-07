@@ -10,7 +10,7 @@ function NewEquipment() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
   const [cantidad, setCantidad] = useState('');
-  const [estado, setEstado] = useState('Operativa');
+  const [estado, setEstado] = useState('Operativo');
   const [equipment_name, setEquipmentName] = useState('');
   const [mensaje, setMensaje] = useState('');
 
@@ -119,9 +119,10 @@ const handleSubmit = async (e) => {
           <div>
             <label>Estado:</label>
             <select value={estado} onChange={(e) => setEstado(e.target.value)}>
-              <option value="Operativa">Operativa</option>
-              <option value="No Operativa">No Operativa</option>
+              <option value="Operativo">Operativo</option>
+              <option value="No Operativo">No Operativo</option>
               <option value="En Mantención">En Mantención</option>
+              <option value="Asignado">Asignado</option>
             </select>
           </div>
         </fieldset>

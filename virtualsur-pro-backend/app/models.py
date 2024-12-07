@@ -20,6 +20,7 @@ class Cliente(db.Model):
     client_address = db.Column(db.String(50))
     client_rut = db.Column(db.String(50))
     client_phone = db.Column(db.Integer)
+    contracts = db.relationship('Contract', back_populates='client')
 
     def __init__(self, client_name, client_email, client_address, client_rut, client_phone):
         self.client_name = client_name
@@ -72,7 +73,7 @@ class Equipment(db.Model):
     equipment_id = db.Column(db.Integer, primary_key=True)
     subcategory_id = db.Column(db.Integer, db.ForeignKey('subcategories.subcategory_id'))
     tech_code = db.Column(db.String(50), unique=True, nullable=False)
-    status_equipment = db.Column(db.Enum('Operativa', 'No Operativa', 'En Mantención'), nullable=False)
+    status_equipment = db.Column(db.Enum('Operativo', 'No Operativo', 'En Mantención','Asignado'), nullable=False, default='Operativo')
     equipment_name = db.Column(db.String(50))
     subcategory = db.relationship('Subcategory', backref=db.backref('equipments', lazy=True))
 
@@ -93,6 +94,9 @@ class Contract(db.Model):
     additional_cost = db.Column(db.Float, nullable=True, default=0)
     total_cost = db.Column(db.Float, nullable=False)
 
+    # Relación con la tabla Client
+    client = db.relationship('Cliente', back_populates='contracts')
+
     #Metodo para generar un codigo unico
     @staticmethod
     def generate_contract_code():
@@ -104,3 +108,22 @@ class Contract(db.Model):
             next_number = 1      
         return f"CT-{str(next_number).zfill(3)}"
     
+#Tabla intermerdia Equpamiento - Contrato
+class ContractEquipment(db.Model):
+    __tablename__ = 'contract_equipments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    contract_id = db.Column(db.Integer, db.ForeignKey('contracts.contract_id'))
+    equipment_id = db.Column(db.Integer, db.ForeignKey('equipments.equipment_id'))
+
+    def __init__(self, contract_id, equipment_id):
+        self.contract_id = contract_id
+        self.equipment_id = equipment_id
+
+# Tabla intermedia Persnal - Contrato
+class ContractPersonal(db.Model):
+    __tablename__='contract_personals'
+    contract_personal_id = db.Column(db.Integer, primary_key=True)
+    contract_id = db.Column(db.Integer, db.ForeignKey('contracts.contract_id'))
+    staff_id = db.Column(db.Integer, db.ForeignKey('staffs.staff_id'))
+    role = db.Column(db.String(50), nullable=True)

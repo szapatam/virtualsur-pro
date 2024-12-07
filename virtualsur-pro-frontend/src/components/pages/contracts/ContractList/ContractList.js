@@ -1,28 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import './ContractList.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function ContractList() {
-
     const navigate = useNavigate();
-
     const handleaddEqupmentClick = () => {
         navigate('/ContractCreate');
     }
-    const handleViewContractClick = (contractId) => {
-        navigate(`/contract/${contractId}`);
-    }
 
-    const [contracts] = useState([
-        { id: 'C001', month: 'Enero', client: 'Cliente A', status: 'Activo', detail: 'Detalle A' },
-        { id: 'C002', month: 'Febrero', client: 'Cliente B', status: 'Inactivo', detail: 'Detalle B' },
-        { id: 'C003', month: 'Marzo', client: 'Cliente C', status: 'Pendiente', detail: 'Detalle C' },
-    ]);
+
+    //Creación de estados
+    const [contracts, setContracts] = useState([]);
+    const [loading, setLoading] = useState('');
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        const fetchContracts = async () => {
+            try {
+                const response = await axios.get('http://127.0.0.1:5000/contracts');
+                setContracts(response.data);
+                setLoading(false);
+            } catch (error) {
+                setError('Hubo un error al obtener el listado de contratos');
+                setLoading(false);
+            }
+        };
+        fetchContracts();
+    }, []);
+
+    const handleDeleteContract = async (contractId) => {
+        const confirmDelete = window.confirm("¿Está seguro de que desea eliminar este contrato?");
+        if (!confirmDelete) {
+          return;
+        }
+      
+        try {
+          await axios.delete(`http://127.0.0.1:5000/contracts/${contractId}`);
+          alert('Contrato eliminado con éxito.');
+      
+          // Actualizar la lista de contratos después de la eliminación
+          setContracts(contracts.filter(contract => contract.contract_id !== contractId));
+        } catch (error) {
+          console.error('Error al eliminar el contrato:', error);
+          alert('Hubo un error al eliminar el contrato.');
+        }
+      };
 
     return (
         <div className="contract-list-container">
             <div className="contract-list-header">
                 <h1>Listado Contratos</h1>
+                {loading && <p>Cargando...</p>}
+                {error && <p className='error-message'>{error}</p>}
                 <button className='new-contract-button' onClick={handleaddEqupmentClick}>Nuevo Contrato</button>
             </div>
 
@@ -54,24 +86,38 @@ function ContractList() {
                 <table>
                     <thead>
                         <tr>
-                            <th>Encabezado A</th>
-                            <th>Encabezado B</th>
-                            <th>Encabezado C</th>
-                            <th>Encabezado D</th>
+                            <th>Código Contrato</th>
+                            <th>Nombre del Cliente</th>
+                            <th>Nombre del Evento</th>
+                            <th>Fecha de Inicio</th>
+                            <th>Fecha de Ejecución</th>
+                            <th>Lugar del Evento</th>
+                            <th>Metros Cuadrados</th>
+                            <th>Costo Total</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {contracts.map(contract => (
-                            <tr key={contract.id}>
-                                <td>{contract.id}</td>
-                                <td>{contract.month}</td>
-                                <td>{contract.client}</td>
-                                <td>
-                                    <button className="view-button" onClick={() => { handleViewContractClick(contract.id) }}>Ver/Editar</button>
-                                    <button className="delete-button">Eliminar</button>
-                                </td>
-                            </tr>
-                        ))}
+                    {contracts.map((contract) => (
+                        <tr key={contract.contract_id}>
+                            <td>{contract.contract_code}</td>
+                            <td>{contract.client_name}</td>
+                            <td>{contract.event_name}</td>
+                            <td>{contract.contract_start_date}</td>
+                            <td>{contract.event_execution_date}</td>
+                            <td>{contract.event_location}</td>
+                            <td>{contract.square_meters}</td>
+                            <td>{contract.total_cost}</td>
+                            <td>
+                                <button onClick={() => navigate(`/contract/${contract.contract_id}`)} className="action-button edit">
+                                    <FontAwesomeIcon icon={faEdit} /> Ver/Editar
+                                </button>
+                                <button className="action-button delete" onClick={() => handleDeleteContract(contract.contract_id)}>
+                                    <FontAwesomeIcon icon={faTrash} /> Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    ))}                        
                     </tbody>
                 </table>
             </div>

@@ -59,7 +59,7 @@ CREATE TABLE equipments (
 -- INSERTS OBLIGATORIOS --
 
 insert into roles (role_id, role_name)values (1,'Chofer');
-insert into roles (role_id, role_name)values (2,'Carguer');
+insert into roles (role_id, role_name)values (2,'Carguero');
 insert into roles (role_id, role_name)values (3,'Sonidista');
 insert into roles (role_id, role_name)values (4,'Jefe Tecnico');
 
