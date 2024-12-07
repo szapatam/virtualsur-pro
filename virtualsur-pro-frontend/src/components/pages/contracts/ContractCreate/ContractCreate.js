@@ -128,19 +128,15 @@ function NewContract() {
                             <table className="contracts-table">
                                 <thead>
                                     <tr>
-                                        <th>Encabezado A</th>
-                                        <th>Encabezado B</th>
-                                        <th>Encabezado C</th>
+                                        <th>Codigo Tecnico</th>
+                                        <th>Nombre Equipo</th>
+                                        <th>Subcategoría</th>
+                                        <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>Celda A</td>
-                                        <td>Celda B</td>
-                                        <td>Celda C</td>
-                                    </tr>
                                 </tbody>
-                            </table>
+                            </table>    
                         </fieldset>
                         <button className='add-iventory-item'>Añadir</button>
                         <button className='remove-item'>Eliminar</button>

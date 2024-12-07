@@ -236,9 +236,10 @@ const Modal = ({
     };
     return (
         <div className="modal">
-            <div className="modal-content">
-                <h3>Asignar Equipamiento</h3>
-                <table className="modal-table">
+            <div className="contract-section-box">
+                <fieldset>
+                    <legend>Seleccionar cantidad</legend>
+                <table className="assigned-equipment-table">
                     <thead>
                         <tr>
                             <th>Subcategoría</th>
@@ -253,6 +254,7 @@ const Modal = ({
                                 <td>{equipment.available_count}</td>
                                 <td>
                                 <input
+                                    className='modal-input'
                                     type="number"
                                     min="1"
                                     max={equipment.available_count}
@@ -277,8 +279,9 @@ const Modal = ({
                         ))}
                     </tbody>
                 </table>
+                </fieldset>
                 <div className="modal-actions">
-                    <button onClick={onClose}>Confirmar</button>
+                    <button onClick={onClose} className='modal-button'>Confirmar</button>
                 </div>
             </div>
         </div>
@@ -350,8 +353,10 @@ const Modal = ({
                     </form>
                 </div>
             </div>
-                <div className="equipment-section">
-                     <h3>Equipamiento Asignado</h3>
+        <div className='inventory'>
+                <div className="contract-section-box">
+                    <fieldset>
+                        <legend>Equipamiento</legend>
                     <table className="assigned-equipment-table">
                         <thead>
                             <tr>
@@ -369,7 +374,7 @@ const Modal = ({
                                 <td>{equipment.subcategory_name || 'N/A'}</td>
                                 <td>
                             <button
-                              className="remove-equipment-button" onClick={() => handleRemoveEquipment(equipment.equipment_id)}
+                              className="remove-item" onClick={() => handleRemoveEquipment(equipment.equipment_id)}
                             >
                                  Eliminar
                             </button>
@@ -378,10 +383,12 @@ const Modal = ({
                             ))}
                             </tbody>
                     </table>
-                    <button className="assign-equipment-button" onClick={openModal}>
+                    </fieldset>
+                    <button className="add-iventory-item" onClick={openModal}>
                         Asignar Equipamiento
                     </button>
                 </div>
+            </div>
             <div className="personal">
                 <div className="contract-section-box">
                     <fieldset>
