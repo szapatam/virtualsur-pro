@@ -201,16 +201,9 @@ function ContractDetail() {
 // Modal para asignar equipamiento
 const Modal = ({
     availableEquipments,
-    selectedSubcategory,
-    setSelectedSubcategory,
-    selectedQuantity,
-    setSelectedQuantity,
-    handleAssignEquipment,
     onSave,
     equipments,
-    onClose,
-    filteredEquipments,
-    closeModal,
+    onClose
 }) => {
 
 
@@ -285,8 +278,7 @@ const Modal = ({
                     </tbody>
                 </table>
                 <div className="modal-actions">
-                    <button onClick={handleSave}>Guardar</button>
-                    <button onClick={onClose}>Cancelar</button>
+                    <button onClick={onClose}>Confirmar</button>
                 </div>
             </div>
         </div>
