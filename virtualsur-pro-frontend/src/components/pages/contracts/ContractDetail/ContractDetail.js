@@ -17,6 +17,9 @@ function ContractDetail() {
     const [availableEquipments, setAvailableEquipments] = useState([]); // Equipos disponibles
     const [selectedSubcategory, setSelectedSubcategory] = useState('');
     const [selectedQuantity, setSelectedQuantity] = useState('');
+    const [removedEquipments, setRemovedEquipments] = useState([]);
+
+    
     
 
     // Abrir y cerrar el modal
@@ -100,8 +103,12 @@ function ContractDetail() {
             try {
                 const response = await axios.get(`http://127.0.0.1:5000/contracts/${contractId}`)
                 setContract(response.data);
+
+                //Actualizar los equipos asignados
+                if (response.data.equipments){
+                    setContractEquipments(response.data.equipments)
+                }
                 setLoading(false);
-                console.log(response.data)
             } catch (error) {
                 console.error("Error al obtener los detalles del contrato", error);
                 alert("Hubo un error al obtener los detalles del contrato.");
@@ -143,6 +150,7 @@ function ContractDetail() {
             const payload = {
                 ...contract,
                 equipments: contractEquipments, // Incluye equipos asignados
+                removed_equipments: removedEquipments, // Equipos eliminados
             };
             await axios.put(`http://127.0.0.1:5000/contracts/${contract.contract_id}`, payload);
             alert('Contrato actualizado con éxito.');
@@ -158,6 +166,11 @@ function ContractDetail() {
     setContractEquipments((prevEquipments) =>
         prevEquipments.filter((equipment) => equipment.tech_code !== techCode)
     );
+
+    setRemovedEquipments((prevRemoved) =>[
+        ...prevRemoved,
+        techCode,
+    ]);
 };
     
 

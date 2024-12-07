@@ -508,6 +508,7 @@ def get_contracts():
 @main.route('/contracts/<int:contract_id>', methods=['GET'])
 def get_contract_details(contract_id):
     try:
+        # Consultar los detalles básicos del contrato
         contract = Contract.query.join(Cliente, Contract.client_id == Cliente.client_id).add_columns(
             Contract.contract_id,
             Contract.contract_code,
@@ -525,6 +526,20 @@ def get_contract_details(contract_id):
         if not contract:
             return jsonify({"message": "Contrato no encontrado"}), 404
 
+        # Consultar los equipos asignados al contrato
+        equipments = ContractEquipment.query.filter_by(contract_id=contract_id).all()
+        equipment_list = [
+            {
+                "equipment_id": equipment.equipment_id,
+                "tech_code": equipment.tech_code,
+                "equipment_name": equipment.equipment_name,
+                "subcategory_name": equipment.subcategory_name,
+                "quantity": equipment.quantity
+            }
+            for equipment in equipments
+        ]
+
+        # Formar el resultado final
         result = {
             "contract_id": contract.contract_id,
             "contract_code": contract.contract_code,
@@ -536,12 +551,14 @@ def get_contract_details(contract_id):
             "square_meters": contract.square_meters,
             "square_meter_value": contract.square_meter_value,
             "additional_cost": contract.additional_cost,
-            "total_cost": contract.total_cost
+            "total_cost": contract.total_cost,
+            "equipments": equipment_list  # Incluir equipos asignados
         }
         return jsonify(result), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
     
 @main.route('/contracts/<int:contract_id>', methods=['PUT'])
 def update_contract(contract_id):
@@ -550,14 +567,13 @@ def update_contract(contract_id):
         data = request.get_json()
         print(data)
 
-        # Buscar el contrato existente en la base de datos
+        # Buscar el contrato existente
         contract = Contract.query.filter_by(contract_id=contract_id).first()
 
-        # Si no se encuentra el contrato, retornar un error
         if not contract:
             return jsonify({"message": "Contrato no encontrado"}), 404
 
-        # Actualizar los campos del contrato con los nuevos datos
+        # Actualizar los datos del contrato
         contract.client_id = data.get('client_id', contract.client_id)
         contract.event_name = data.get('event_name', contract.event_name)
         contract.contract_start_date = data.get('contract_start_date', contract.contract_start_date)
@@ -566,21 +582,64 @@ def update_contract(contract_id):
         contract.square_meters = data.get('square_meters', contract.square_meters)
         contract.square_meter_value = data.get('square_meter_value', contract.square_meter_value)
         contract.additional_cost = data.get('additional_cost', contract.additional_cost)
-        
+
         # Recalcular el costo total
         contract.total_cost = (
             float(contract.square_meters) * float(contract.square_meter_value)
         ) + float(contract.additional_cost)
 
-        # Guardar los cambios en la base de datos
+        # Manejar equipos asignados
+        equipments = data.get('equipments', [])
+        removed_equipments = data.get('removed_equipments', [])
+
+        # Eliminar equipos removidos
+        if removed_equipments:
+            ContractEquipment.query.filter(
+                ContractEquipment.contract_id == contract_id,
+                ContractEquipment.tech_code.in_(removed_equipments)
+            ).delete(synchronize_session='fetch')
+
+        # Agregar nuevos equipos asignados
+        for equipment in equipments:
+            tech_code = equipment.get('tech_code')
+            if not tech_code:
+                continue
+
+            # Verificar si ya existe la relación para evitar duplicados
+            existing_relation = ContractEquipment.query.filter_by(
+                contract_id=contract_id,
+                tech_code=tech_code
+            ).first()
+
+            if not existing_relation:
+                # Crear nueva relación equipo-contrato
+                new_contract_equipment = ContractEquipment(
+                    contract_id=contract_id,
+                    equipment_id=equipment.get('equipment_id'),  # Asegúrate de enviar este campo desde el frontend
+                    tech_code=tech_code,
+                    equipment_name=equipment.get('equipment_name'),
+                    subcategory_name=equipment.get('subcategory_name'),
+                    quantity=1  # Cada equipo cuenta como uno
+                )
+                db.session.add(new_contract_equipment)
+
+                # Cambiar el estado del equipo en la tabla de Equipments
+                assigned_equipment = Equipment.query.filter_by(tech_code=tech_code).first()
+                if assigned_equipment:
+                    assigned_equipment.status_equipment = "Asignado"
+                    db.session.add(assigned_equipment)
+
+        # Guardar cambios en la base de datos
         db.session.commit()
 
         return jsonify({"message": "Contrato actualizado con éxito"}), 200
 
     except Exception as e:
-        # Manejar cualquier error y retornar un mensaje adecuado
         db.session.rollback()
+        print("Error al actualizar contrato:", e)
         return jsonify({"error": str(e)}), 400
+
+
 
 
 @main.route('/contracts/<int:contract_id>', methods=['DELETE'])
@@ -625,9 +684,14 @@ def assign_equipment(contract_id):
         equipment.status_equipment = "Asignado"  # Cambiar estado a 'Asignado'
         db.session.add(equipment)
 
-        # Crear la relación entre contrato y equipo
+        # Crear la relación entre contrato y equipo con los nuevos campos
         contract_equipment = ContractEquipment(
-            contract_id=contract_id, equipment_id=equipment.equipment_id
+            contract_id=contract_id,
+            equipment_id=equipment.equipment_id,
+            tech_code=equipment.tech_code,
+            equipment_name=equipment.equipment_name,
+            subcategory_name=equipment.subcategory.subcategory_name,  # Asegúrate de que hay relación en el modelo
+            quantity=1  # Cada equipo asignado cuenta como uno
         )
         db.session.add(contract_equipment)
 
