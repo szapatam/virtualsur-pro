@@ -89,6 +89,7 @@ function StaffList() {
             <th>Telefono</th>
             <th>Dirección</th>
             <th>Rol</th>
+            <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -101,6 +102,7 @@ function StaffList() {
               <td>{staff.staff_phone}</td>
               <td>{staff.staff_address}</td>
               <td>{staff.role}</td>
+              <td>{staff.status}</td>
               <td>
                 <button onClick={() => handleViewStaffClick(staff.staff_id)} className="action-button edit">
                   <FontAwesomeIcon icon={faEdit} /> Ver/Editar

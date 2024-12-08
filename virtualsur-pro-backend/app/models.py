@@ -40,16 +40,13 @@ class Personal (db.Model):
     staff_phone = db.Column(db.String(50))
     staff_address = db.Column(db.String(50))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.role_id'))
+    status = db.Column(db.String(50), default="Disponible")
 
     role = db.relationship('Role', backref='staffs')
 
-    def __init__(self, staff_name, staff_rut, staff_email, staff_phone, staff_address, role_id):
-        self.staff_name = staff_name
-        self.staff_rut = staff_rut
-        self.staff_email = staff_email
-        self.staff_phone = staff_phone
-        self.staff_address = staff_address
-        self.role_id = role_id 
+    @property
+    def role_name(self):
+        return self.role.role_name if self.role else None
 
 #Clase Categoria
 class Category(db.Model):
@@ -130,8 +127,12 @@ class ContractEquipment(db.Model):
 
 # Tabla intermedia Persnal - Contrato
 class ContractPersonal(db.Model):
-    __tablename__='contract_personals'
-    contract_personal_id = db.Column(db.Integer, primary_key=True)
+    __tablename__ = 'contract_personal'
+
+    id = db.Column(db.Integer, primary_key=True)
     contract_id = db.Column(db.Integer, db.ForeignKey('contracts.contract_id'))
     staff_id = db.Column(db.Integer, db.ForeignKey('staffs.staff_id'))
-    role = db.Column(db.String(50), nullable=True)
+
+    def __init__(self, contract_id, staff_id):
+        self.contract_id = contract_id
+        self.staff_id = staff_id

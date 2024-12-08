@@ -18,7 +18,75 @@ function ContractDetail() {
     const [selectedSubcategory, setSelectedSubcategory] = useState('');
     const [selectedQuantity, setSelectedQuantity] = useState('');
     const [removedEquipments, setRemovedEquipments] = useState([]);
+    //sección de personal
+    const [contractPersonal, setContractPersonal] = useState([]); // Personal asignado al contrato
+    const [availablePersonal, setAvailablePersonal] = useState([]); // Personal disponible
+    const [isPersonalModalOpen, setIsPersonalModalOpen] = useState(false); // Estado del modal para personal
+    const [assignedPersonnel, setAssignedPersonnel] = useState([]);
+    
 
+    //sección personal
+    useEffect(() => {
+        const fetchContractPersonal = async () => {
+            try {
+                const response = await axios.get(`http://127.0.0.1:5000/contracts/${contractId}/personal`);
+                console.log("Datos del personal asignado", response.data);
+                setContractPersonal(response.data || []);
+            } catch (error) {
+                console.error("Error al obtener el personal asignado:", error);
+            }
+        };
+    
+        fetchContractPersonal();
+    }, [contractId]);
+    
+    const openPersonalModal = async () => {
+        try {
+            const response = await axios.get("http://127.0.0.1:5000/personal/available");
+            setAvailablePersonal(response.data);
+            setIsPersonalModalOpen(true);
+        } catch (error) {
+            console.error("Error al obtener personal disponible:", error);
+            alert("Hubo un error al cargar el personal disponible.");
+        }
+    };
+
+    const handleAssignPersonnel = async (staffId) => {
+        try {
+            const response = await axios.post(`http://127.0.0.1:5000/contracts/${contractId}/assign_personal`, {
+                contract_id: contractId,
+                staff_id: staffId,
+            });
+    
+            const assignedPerson = response.data.assigned_personnel; // Revisa que el backend retorne los datos completos
+    
+            // Actualiza el estado de personal asignado
+            setContractPersonal((prevPersonnel) => [...prevPersonnel, assignedPerson]);
+            setAssignedPersonnel((prevPersonnel) => [...prevPersonnel, assignedPerson]);
+        } catch (error) {
+            console.error('Error al asignar personal:', error);
+            alert('Hubo un error al asignar el personal.');
+        }
+    };
+    
+    const handleRemovePersonal = async (staffId) => {
+        try {
+            await axios.delete(`http://127.0.0.1:5000/contracts/${contractId}/remove_personal/${staffId}`);
+    
+            // Mover el personal de asignados a disponibles
+            const removedPersonal = contractPersonal.find((person) => person.staff_id === staffId);
+            setAvailablePersonal([...availablePersonal, removedPersonal]);
+    
+            // Actualizar el estado local
+            setContractPersonal(contractPersonal.filter((person) => person.staff_id !== staffId));
+    
+            alert("Personal eliminado del contrato.");
+        } catch (error) {
+            console.error("Error al eliminar personal:", error);
+            alert("Hubo un error al eliminar el personal.");
+        }
+    };
+    
     
     
 
@@ -126,6 +194,11 @@ function ContractDetail() {
                 if (response.data.equipments){
                     setContractEquipments(response.data.equipments)
                 }
+                // Actualiza el personal asignado
+                if (response.data.assigned_personnel) {
+                    setAssignedPersonnel(response.data.assigned_personnel);
+                }
+                
                 setLoading(false);
             } catch (error) {
                 console.error("Error al obtener los detalles del contrato", error);
@@ -161,6 +234,7 @@ function ContractDetail() {
         return <p>Cargando...</p>;
     }
 
+
     const handleUpdateSubmit = async (e) => {
         e.preventDefault();
     
@@ -169,6 +243,7 @@ function ContractDetail() {
                 ...contract,
                 equipments: contractEquipments, // Incluye equipos asignados
                 removed_equipments: removedEquipments, // Equipos eliminados
+                personal: contractPersonal, // Incluir Personal asignado
             };
             await axios.put(`http://127.0.0.1:5000/contracts/${contract.contract_id}`, payload);
             alert('Contrato actualizado con éxito.');
@@ -194,7 +269,8 @@ function ContractDetail() {
             alert("Hubo un error al eliminar el equipo.");
         }
     };
-    
+
+
     
     
 
@@ -283,6 +359,40 @@ const Modal = ({
                 <div className="modal-actions">
                     <button onClick={onClose} className='modal-button'>Confirmar</button>
                 </div>
+            </div>
+        </div>
+    );
+};
+
+// Modal para asignar Personal
+const PersonalModal = ({ availablePersonal, onClose, onAssign }) => {
+    return (
+        <div className="modal">
+            <div className="contract-section-box"> 
+                <table>
+                <fieldset>
+                    <legend>Asignar Personal</legend>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Rol</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {availablePersonal.map((person) => (
+                            <tr key={person.staff_id}>
+                                <td>{person.name}</td>
+                                <td>{person.role}</td>
+                                <td>
+                                    <button onClick={() => onAssign(person.staff_id)} className='modal-button'>Asignar</button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </fieldset>
+                </table>
+                <button onClick={onClose} className='modal-button'>Cerrar</button>
             </div>
         </div>
     );
@@ -389,29 +499,46 @@ const Modal = ({
                     </button>
                 </div>
             </div>
-            <div className="personal">
+            <div className='personal'>
                 <div className="contract-section-box">
                     <fieldset>
                         <legend>Personal</legend>
-                        <table className="contracts-table">
-                            <thead>
-                                <tr>
-                                    <th>Encabezado A</th>
-                                    <th>Encabezado B</th>
-                                    <th>Encabezado C</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Celda A</td>
-                                    <td>Celda B</td>
-                                    <td>Celda C</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <table className="assigned-equipment-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Rol</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                                {contractPersonal.map((person) => (
+                                    <tr key={person.staff_id}>
+                                        <td>{person.name}</td>
+                                        <td>{person.role}</td>
+                                        <td>
+                                            <button
+                                                className="remove-item"
+                                                onClick={() => handleRemovePersonal(person.staff_id)}
+                                            >
+                                                Eliminar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                        </tbody>
+                    </table>
                     </fieldset>
-                    <button className='add-iventory-item'>Añadir</button>
-                    <button className='remove-item'>Eliminar</button>
+                    <button className="add-iventory-item" onClick={openPersonalModal}>
+                        Asignar Personal
+                    </button>
+                    {isPersonalModalOpen && (
+                        <PersonalModal
+                            availablePersonal={availablePersonal}
+                            onClose={() => setIsPersonalModalOpen(false)}
+                            onAssign={handleAssignPersonnel}
+                        />
+                    )}
                 </div>
             </div>
             <div className="docs">

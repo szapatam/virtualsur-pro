@@ -16,6 +16,7 @@ function StaffCreate() {
     const [staffAddress, setStaffAddress] = useState('');
     const [roleId, setRoleId] = useState('');
     const [roles, setRoles] = useState([]);
+    const [status, setStatus] = useState('');
     const [mensaje, setMensaje] = useState('');
 
     useEffect(() => {
@@ -47,6 +48,7 @@ function StaffCreate() {
         staff_phone: staffPhone,
         staff_address: staffAddress,
         role_id: roleId,
+        status: status
       };
       console.log(nuevoPersonal);
 
@@ -63,6 +65,7 @@ function StaffCreate() {
       setStaffPhone('');
       setStaffAddress('');
       setRoles([])
+      setStatus('');
 
       //Redirigir a listado
       navigate('/personal')
@@ -110,6 +113,13 @@ function StaffCreate() {
               <option key={role.role_id} value={role.role_id}>{role.role_name}</option>
             ))}
           </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="role">Estado:</label>
+          <select value={status} onChange={(e) => setStatus(e.target.value)}>
+              <option value="Disponible">Disponible</option>
+              <option value="Asignado">Asignado</option>
+            </select>
         </div>
         </fieldset>
         <div className='save-button-container'>

@@ -15,6 +15,7 @@ function StaffDetail() {
     const [staffAddress, setStaffAddress] = useState('');
     const [roleId, setRoleId] = useState('');
     const [roles, setRoles] = useState([]);
+    const [status, setStatus] = useState('');
     const [mensaje, setMensaje] = useState('');
 
       // Obtener el listado de roles al cargar el componente
@@ -43,6 +44,7 @@ function StaffDetail() {
           setStaffPhone(staffData.staff_phone);
           setStaffAddress(staffData.staff_address);
           setRoleId(staffData.role_id);
+          setStatus(staffData.status);
         } catch (error) {
           console.error('Error al obtener el detalle del personal:', error);
           setMensaje('Hubo un error al obtener los detalles del personal.');
@@ -62,6 +64,7 @@ function StaffDetail() {
           staff_phone: staffPhone,
           staff_address: staffAddress,
           role_id: roleId, 
+          status: status
         };
   
         const response = await axios.put(`http://127.0.0.1:5000/personal/${staffId}`, updatedStaff);
@@ -146,6 +149,13 @@ function StaffDetail() {
                                 {role.role_name}
                              </option>
                             ))}
+                        </select>
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="role">Estado:</label>
+                        <select value={status} onChange={(e) => setStatus(e.target.value)}>
+                            <option value="Disponible">Disponible</option>
+                            <option value="Asignado">Asignado</option>
                         </select>
                     </div>
                 </fieldset>

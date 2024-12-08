@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from sqlalchemy import func
-from .models import Cliente, Personal, Role, Equipment, Category, Subcategory, Contract, ContractEquipment
+from .models import Cliente, Personal, Role, Equipment, Category, Subcategory, Contract, ContractEquipment, ContractPersonal
 from . import db
 
 main = Blueprint('main', __name__)
@@ -134,7 +134,8 @@ def get_personal():
         Personal.staff_email,
         Personal.staff_phone,
         Personal.staff_address,
-        Role.role_name.label("role_name")
+        Role.role_name.label("role_name"),
+        Personal.status
     ).all()
 
     # Crear la respuesta JSON incluyendo el nombre del rol
@@ -146,7 +147,8 @@ def get_personal():
             "staff_email": p.staff_email,
             "staff_phone": p.staff_phone,
             "staff_address": p.staff_address,
-            "role": p.role_name
+            "role": p.role_name,
+            "status": p.status
         } for p in personal_list
     ]
     return jsonify(result)
@@ -164,7 +166,8 @@ def get_personal_detail(staff_id):
         Personal.staff_email,
         Personal.staff_phone,
         Personal.staff_address,
-        Role.role_name.label("role_name")
+        Role.role_name.label("role_name"),
+        Personal.status
     ).filter(Personal.staff_id == staff_id).first()
 
     if not personal:
@@ -178,7 +181,8 @@ def get_personal_detail(staff_id):
         "staff_email": personal.staff_email,
         "staff_phone": personal.staff_phone,
         "staff_address": personal.staff_address,
-        "role": personal.role_name
+        "role": personal.role_name,
+        "status": personal.status
     }
     print("personal econtrado:", result)
     return jsonify(result)
@@ -213,6 +217,7 @@ def update_personal(staff_id):
         personal.staff_phone = data['staff_phone']
         personal.staff_address = data['staff_address']
         personal.role_id = data['role_id']
+        personal.status = data['status']
 
         db.session.commit()
         return jsonify({"message": "Datos del personal actualizados correctamente"}), 200
@@ -539,6 +544,20 @@ def get_contract_details(contract_id):
             for equipment in equipments
         ]
 
+        # Consulta para obtener el personal asignado
+        assigned_personnel = db.session.query(
+            Personal.staff_id,
+            Personal.staff_name,
+            Role.role_name
+        ).join(Role, Personal.role_id == Role.role_id)\
+         .join(ContractPersonal, Personal.staff_id == ContractPersonal.staff_id)\
+         .filter(ContractPersonal.contract_id == contract_id).all()
+
+        personnel_list = [
+            {"staff_id": person.staff_id, "name": person.staff_name, "role": person.role_name}
+            for person in assigned_personnel
+        ]
+
         # Formar el resultado final
         result = {
             "contract_id": contract.contract_id,
@@ -552,7 +571,9 @@ def get_contract_details(contract_id):
             "square_meter_value": contract.square_meter_value,
             "additional_cost": contract.additional_cost,
             "total_cost": contract.total_cost,
-            "equipments": equipment_list  # Incluir equipos asignados
+            "equipments": equipment_list,  # Incluir equipos asignados
+            'personnel_list': personnel_list # Agregar el personal asignado
+
         }
         return jsonify(result), 200
 
@@ -628,6 +649,29 @@ def update_contract(contract_id):
                 if assigned_equipment:
                     assigned_equipment.status_equipment = "Asignado"
                     db.session.add(assigned_equipment)
+
+        #Tratamiento de Personal
+        personal = data.get('personal', [])
+        removed_personal = data.get('removed_personal', [])
+
+               # Actualizar el estado del personal asignado
+        if personal:
+            for person_data in personal:
+                staff_id = person_data.get("staff_id")
+                staff = Personal.query.filter_by(staff_id=staff_id).first()
+                if staff:
+                    staff.status = "Asignado"
+                    db.session.add(staff)
+
+        # Revertir el estado del personal eliminado
+        if removed_personal:
+            for person_data in removed_personal:
+                staff_id = person_data.get("staff_id")
+                staff = Personal.query.filter_by(staff_id=staff_id).first()
+                if staff:
+                    staff.status = "Disponible"
+                    db.session.add(staff)
+
 
         # Guardar cambios en la base de datos
         db.session.commit()
@@ -871,3 +915,115 @@ def remove_equipment(contract_id, equipment_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
+
+#Personal
+
+@main.route('/contracts/<int:contract_id>/assign_personal', methods=['POST'])
+def assign_personal(contract_id):
+    try:
+        data = request.get_json()
+        staff_id = data.get('staff_id')
+
+        if not staff_id:
+            return jsonify({"error": "Falta el ID del personal"}), 400
+
+        # Buscar el personal disponible
+        staff = Personal.query.filter_by(staff_id=staff_id, status="Disponible").first()
+
+        if not staff:
+            return jsonify({"error": "El personal no está disponible"}), 400
+
+        # Crear la relación entre contrato y personal
+        contract_personal = ContractPersonal(contract_id=contract_id, staff_id=staff_id)
+        db.session.add(contract_personal)
+
+        db.session.commit()
+
+        return jsonify({
+            "assigned_personnel":{
+            "staff_id": staff.staff_id,
+            "name": staff.staff_name,
+            "role": staff.role.role_name,
+            }
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al asignar personal: {str(e)}")
+        return jsonify({"error": "No se pudo asignar el personal"}), 500
+    
+@main.route('/contracts/<int:contract_id>/remove_personal/<int:staff_id>', methods=['DELETE'])
+def remove_personal(contract_id, staff_id):
+    try:
+        # Buscar la relación contrato-personal
+        contract_personal = ContractPersonal.query.filter_by(
+            contract_id=contract_id, staff_id=staff_id
+        ).first()
+
+        if not contract_personal:
+            return jsonify({"error": "Relación contrato-personal no encontrada"}), 404
+
+        # Cambiar el estado del personal a "Disponible"
+        personal = Personal.query.get(staff_id)
+        if personal:
+            personal.status = "Disponible"
+
+        # Eliminar la relación
+        db.session.delete(contract_personal)
+        db.session.commit()
+
+        return jsonify({"message": "Personal eliminado del contrato"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+@main.route('/contracts/<int:contract_id>/personal', methods=['GET'])
+def get_contract_personal(contract_id):
+    try:
+        # Obtener personal asignado al contrato
+        personal = db.session.query(
+            Personal.staff_id,
+            Personal.staff_name,
+            Role.role_name
+        ).join(
+            ContractPersonal, Personal.staff_id == ContractPersonal.staff_id
+        ).outerjoin(
+            Role, Personal.role_id == Role.role_id
+        ).filter(
+            ContractPersonal.contract_id == contract_id
+        ).all()
+
+        result = [
+            {
+                "staff_id": p.staff_id,
+                "name": p.staff_name,
+                "role": p.role_name if p.role_name else "Sin rol"
+            }
+            for p in personal
+        ]
+
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@main.route('/personal/available', methods=['GET'])
+def get_available_personal():
+    try:
+        available_personal = Personal.query.filter_by(status="Disponible").all()
+
+        if not available_personal:
+            return jsonify([]), 200
+
+        result = [
+            {
+                "staff_id": person.staff_id,
+                "name": person.staff_name,
+                "role": person.role.role_name if person.role else "sin rol asignado"
+            }
+            for person in available_personal
+        ]
+
+        return jsonify(result), 200
+    except Exception as e:
+        print(f"Error fetching available personal: {str(e)}")
+        return jsonify({"error": "Unable to fetch available personal"}), 500
