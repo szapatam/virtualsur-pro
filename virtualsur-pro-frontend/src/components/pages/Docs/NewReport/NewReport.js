@@ -1,35 +1,81 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './NewReport.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
 
 function NewReport() {
-  // Estado para manejar los contratos y los filtros
-  const [contracts] = useState([
-    { id: 'C001', name: 'Contrato A', client: 'Cliente X', month: 'Enero', year: '2023' },
-    { id: 'C002', name: 'Contrato B', client: 'Cliente Y', month: 'Febrero', year: '2023' },
-    { id: 'C003', name: 'Contrato C', client: 'Cliente Z', month: 'Marzo', year: '2023' },
-    { id: 'C004', name: 'Contrato D', client: 'Cliente X', month: 'Enero', year: '2024' },
-  ]);
 
-  const [filteredContracts, setFilteredContracts] = useState(contracts);
-  const [filters, setFilters] = useState({ month: '', year: '', client: '' });
+  const [clients, setClients] = useState([]);
+  const [month, setMonth] = useState('');
+  const [year, setYear] = useState('');
+  const [clientId, setClientId] = useState('');
+  const [contracts, setContracts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Manejar el cambio de los filtros
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters({ ...filters, [name]: value });
+  useEffect(() => {
+      // Obtener clientes para el select
+      const fetchClients = async () => {
+          try {
+              const response = await axios.get('http://127.0.0.1:5000/clientes');
+              setClients(response.data);
+          } catch (error) {
+              console.error("Error al cargar clientes:", error);
+          }
+      };
+      fetchClients();
+  }, []);
+
+  const handleSearchContracts = async () => {
+      try {
+          setLoading(true);
+          const filters = {
+              month: month ? parseInt(month) : undefined,
+              year: year ? parseInt(year) : undefined,
+              client_id: clientId || undefined,
+          };
+
+          const response = await axios.get('http://127.0.0.1:5000/contracts/filter', {
+              params: filters,
+          });
+
+          setContracts(response.data);
+          setLoading(false);
+      } catch (error) {
+          console.error("Error al buscar contratos:", error);
+          alert("Hubo un error al buscar los contratos.");
+          setLoading(false);
+      }
   };
 
-  // Filtrar contratos cuando cambian los filtros
-  const applyFilters = () => {
-    const filtered = contracts.filter(contract => {
-      const matchesMonth = filters.month ? contract.month === filters.month : true;
-      const matchesYear = filters.year ? contract.year === filters.year : true;
-      const matchesClient = filters.client ? contract.client.toLowerCase().includes(filters.client.toLowerCase()) : true;
-      return matchesMonth && matchesYear && matchesClient;
-    });
-    setFilteredContracts(filtered);
+  const handleGenerateReport = async () => {
+      try {
+          setLoading(true);
+          const filters = {
+              month: month ? parseInt(month) : undefined,
+              year: year ? parseInt(year) : undefined,
+              client_id: clientId || undefined,
+          };
+
+          const response = await axios.post('http://127.0.0.1:5000/contracts/filter/report', filters, {
+              responseType: 'blob', // Para manejar el PDF directamente
+          });
+
+          // Descargar el archivo PDF
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', 'Reporte_Contratos.pdf');
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          setLoading(false);
+      } catch (error) {
+          console.error("Error al generar el reporte:", error);
+          alert("Hubo un error al generar el reporte.");
+          setLoading(false);
+      }
   };
 
   return (
@@ -40,60 +86,73 @@ function NewReport() {
 
       <div className="new-report-filters">
         <label htmlFor="month">Elegir Mes:</label>
-        <select name="month" id="month" value={filters.month} onChange={handleFilterChange}>
-          <option value="">Elegir Mes</option>
-          <option value="Enero">Enero</option>
-          <option value="Febrero">Febrero</option>
-          <option value="Marzo">Marzo</option>
+        <select name="month" id="month" value={month} onChange={(e) => setMonth(e.target.value)}>
+        <option value="">Seleccionar Mes</option>
+          <option value="1">Enero</option>
+          <option value="2">Febrero</option>
+          <option value="3">Marzo</option>
+          <option value="4">Abril</option>
+          <option value="5">Mayo</option>
+          <option value="6">Junio</option>
+          <option value="7">Julio</option>
+          <option value="8">Agosto</option>
+          <option value="9">Septiembre</option>
+          <option value="10">Octubre</option>
+          <option value="11">Noviembre</option>
+          <option value="12">Diciembre</option>
         </select>
 
-        <label htmlFor="year">Elegir Año:</label>
-        <select name="year" id="year" value={filters.year} onChange={handleFilterChange}>
+        <label htmlFor="year">Seleccionar Año</label>
+        <select name="year" id="year" value={year} onChange={(e) => setYear(e.target.value)}>
           <option value="">Elegir Año</option>
           <option value="2023">2023</option>
           <option value="2024">2024</option>
         </select>
 
-        <label htmlFor="client">Elegir Cliente:</label>
-        <input
-          type="text"
-          id="client"
-          name="client"
-          value={filters.client}
-          onChange={handleFilterChange}
-          placeholder="Elegir Cliente"
-        />
+        <label htmlFor="client">Seleccionar Cliente</label>
+        <select id="client" value={clientId} onChange={(e) => setClientId(e.target.value)}>
+          <option value="">Seleccionar Cliente</option>
+          {clients.map((client) => (
+              <option key={client.client_id} value={client.client_id}>
+                  {client.client_name}
+              </option>
+          ))}
+        </select>
 
-        <button onClick={applyFilters} className="filter-button">Aplicar Filtros</button>
+        <button className="filter-button" onClick={handleSearchContracts} disabled={loading}>
+        {loading ? 'Buscando...' : 'Buscar Contratos'}
+        </button>
       </div>
 
       <div className="new-report-table">
-        <table>
-          <thead>
+      <table>
+        <thead>
             <tr>
-              <th>Encabezado A</th>
-              <th>Encabezado B</th>
-              <th>Encabezado C</th>
-              <th>Encabezado D</th>
+                <th>Código</th>
+                <th>Evento</th>
+                <th>Cliente</th>
+                <th>Ubicación</th>
+                <th>Metros Cuadrados</th>
+                <th>Costo Total</th>
             </tr>
-          </thead>
-          <tbody>
-            {filteredContracts.map(contract => (
-              <tr key={contract.id}>
-                <td>{contract.id}</td>
-                <td>{contract.name}</td>
-                <td>{contract.client}</td>
-                <td>
-                  <button className="report-button">Ver Contrato</button>
-                </td>
-              </tr>
+        </thead>
+        <tbody>
+            {contracts.map((contract) => (
+                <tr key={contract.contract_id}>
+                    <td>{contract.contract_code}</td>
+                    <td>{contract.event_name}</td>
+                    <td>{contract.client_name}</td>
+                    <td>{contract.event_location}</td>
+                    <td>{contract.square_meters}</td>
+                    <td>${contract.total_cost}</td>
+                </tr>
             ))}
-          </tbody>
-        </table>
+        </tbody>
+    </table>
       </div>
 
       <div className="new-report-generate">
-        <button className="generate-button">Generar Reporte</button>
+        <button className="generate-button" onClick={handleGenerateReport}>Generar Reporte</button>
       </div>
     </div>
   );

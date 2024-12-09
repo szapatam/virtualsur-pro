@@ -1350,3 +1350,163 @@ def generate_guia_despacho(contract_id):
     except Exception as e:
         print(f"Error generando guía de despacho/retiro: {str(e)}")
         return jsonify({"error": "No se pudo generar la guía de despacho/retiro"}), 500
+    
+
+#Filtro - Contratos
+@main.route('/contracts/filter', methods=['GET'])
+def filter_contracts():
+    try:
+
+        # Obtener parámetros de los filtros
+        month = request.args.get('month', type=int)  # Mes (opcional)
+        year = request.args.get('year', type=int)    # Año (opcional)
+        client_id = request.args.get('client_id', type=int)  # Cliente (opcional)
+
+        # Base de la consulta
+        query = db.session.query(
+            Contract.contract_id,
+            Contract.contract_code,
+            Contract.event_name,
+            Contract.total_cost,
+            Contract.event_location,
+            Contract.square_meters,
+            Cliente.client_name,
+            Contract.contract_start_date
+        ).join(Cliente, Contract.client_id == Cliente.client_id)
+
+        # Aplicar filtros dinámicamente
+        if month:
+            query = query.filter(db.extract('month', Contract.contract_start_date) == month)
+        if year:
+            query = query.filter(db.extract('year', Contract.contract_start_date) == year)
+        if client_id:
+            query = query.filter(Contract.client_id == client_id)
+
+        # Ejecutar la consulta
+        contracts = query.all()
+
+        months_in_spanish = {
+        1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
+        5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
+        9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"}
+
+        # Formatear resultados para enviarlos al frontend
+        results = [
+            {
+                "contract_id": contract.contract_id,
+                "contract_code": contract.contract_code,
+                "event_name": contract.event_name,
+                "total_cost": contract.total_cost,
+                "event_location": contract.event_location,
+                "square_meters": contract.square_meters,
+                "client_name": contract.client_name,
+                "contract_start_date": contract.contract_start_date.strftime('%Y-%m-%d'),
+                "month": months_in_spanish[contract.contract_start_date.month],  # Convertir el mes a español
+                "year": contract.contract_start_date.year
+            }
+            for contract in contracts
+        ]
+
+        return jsonify(results), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@main.route('/contracts/filter/report', methods=['POST'])
+def generate_contracts_report():
+    try:
+
+        # Diccionario para los nombres de los meses en español
+        months_in_spanish = {
+            1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
+            5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
+            9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
+        }
+
+        # Obtener filtros
+        data = request.get_json()
+        month = data.get('month')
+        year = data.get('year')
+        client_id = data.get('client_id')
+        
+
+        # Consulta base de contratos
+        query = db.session.query(
+            Contract.contract_code,
+            Contract.event_name,
+            Cliente.client_name,
+            Contract.event_location,
+            Contract.square_meters,
+            Contract.total_cost
+        ).join(Cliente, Contract.client_id == Cliente.client_id)
+
+        # Aplicar filtros
+        if month:
+            query = query.filter(db.extract('month', Contract.contract_start_date) == month)
+        if year:
+            query = query.filter(db.extract('year', Contract.contract_start_date) == year)
+        if client_id:
+            query = query.filter(Contract.client_id == client_id)
+
+        contracts = query.all()
+
+        # Generar el PDF
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font('Arial', 'B', 14)
+        pdf.cell(0, 10, 'Reporte de Contratos', align='C', ln=True)
+
+        # Filtros aplicados
+        pdf.set_font('Arial', '', 10)
+        pdf.set_fill_color(200, 200, 200)  # Color gris claro
+        if month:
+            month_name = months_in_spanish.get(month, "Desconocido")
+            pdf.cell(20, 10, 'Mes', border=1, fill=True)
+            pdf.cell(30, 10, f'{month_name}', ln=True, border=1 )
+        if year:
+            pdf.cell(20, 10, 'Año:', border=1, fill=True)
+            pdf.cell(30, 10, f'{year}', ln=True, border=1)
+        if client_id:
+            client = db.session.query(Cliente).filter_by(client_id=client_id).first()
+            pdf.cell(20, 10, 'Cliente:', border=1, fill=True)
+            pdf.cell(30, 10, f'{client.client_name}', ln=True, border=1)
+
+        pdf.ln(10)
+
+        # Encabezados de tabla
+        pdf.set_font('Arial', 'B', 10)
+        pdf.set_fill_color(200, 200, 200)  # Color gris claro
+        pdf.cell(20, 10, 'Código',1, align='C', fill=True)
+        pdf.cell(50, 10, 'Evento', 1, align='C', fill=True)
+        pdf.cell(30, 10, 'Cliente', 1, align='C', fill=True)
+        pdf.cell(30, 10, 'Ubicación', 1, align='C', fill=True)
+        pdf.cell(30, 10, 'Metros Cuad.', 1, align='C', fill=True)
+        pdf.cell(30, 10, 'Costo Total', 1, ln=True, align='C', fill=True)
+
+        # Datos de la tabla
+        pdf.set_font('Arial', '', 10)
+        total_general = 0
+        for contract in contracts:
+            pdf.cell(20, 10, contract.contract_code, 1)
+            pdf.cell(50, 10, contract.event_name, 1)
+            pdf.cell(30, 10, contract.client_name, 1)
+            pdf.cell(30, 10, contract.event_location, 1)
+            pdf.cell(30, 10, str(int(contract.square_meters)), 1)
+            pdf.cell(30, 10, f"${int(contract.total_cost)}", 1, ln=True)
+            total_general += contract.total_cost
+
+        # Total General
+        pdf.set_fill_color(200, 200, 200)  # Color gris claro
+        pdf.set_font('Arial', 'B', 10)
+        pdf.cell(160, 10, 'Total General', 1, align='R', fill=True)
+        pdf.cell(30, 10, f"${int(total_general)}", 1, ln=True)
+
+        # Preparar respuesta
+        response = make_response(pdf.output(dest='S').encode('latin1'))
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = 'inline; filename=Reporte_Contratos.pdf'
+        return response
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
