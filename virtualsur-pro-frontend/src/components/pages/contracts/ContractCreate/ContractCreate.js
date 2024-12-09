@@ -149,17 +149,13 @@ function NewContract() {
                             <table className="contracts-table">
                                 <thead>
                                     <tr>
-                                        <th>Encabezado A</th>
-                                        <th>Encabezado B</th>
-                                        <th>Encabezado C</th>
+                                        <th>Nombre</th>
+                                        <th>Rol</th>
+                                        <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>Celda A</td>
-                                        <td>Celda B</td>
-                                        <td>Celda C</td>
-                                    </tr>
+
                                 </tbody>
                             </table>
                         </fieldset>

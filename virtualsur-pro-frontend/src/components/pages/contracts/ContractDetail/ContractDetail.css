@@ -74,6 +74,20 @@
     min-width: 200px;
 }
 
+.docs-first-btn{
+    text-align: center;
+    justify-content: center;
+    margin-bottom: 10px;
+
+    
+}
+
+.docs-action-btn button{
+    text-align: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
 
 /*SECCION DE MODAL*/
 

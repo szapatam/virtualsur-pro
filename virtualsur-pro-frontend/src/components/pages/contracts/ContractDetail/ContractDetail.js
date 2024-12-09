@@ -23,7 +23,24 @@ function ContractDetail() {
     const [availablePersonal, setAvailablePersonal] = useState([]); // Personal disponible
     const [isPersonalModalOpen, setIsPersonalModalOpen] = useState(false); // Estado del modal para personal
     const [assignedPersonnel, setAssignedPersonnel] = useState([]);
+    const [contractDocuments, setContractDocuments] = useState([]);
     
+    //sección documentos
+    useEffect(() => {
+        const fetchContractDocuments = async () => {
+            try {
+                const response = await axios.get(`http://127.0.0.1:5000/contracts/${contractId}/documents`);
+                setContractDocuments(response.data);
+            } catch (error) {
+                console.error("Error al obtener los documentos del contrato:", error);
+                alert("Hubo un error al cargar los documentos del contrato.");
+            }
+        };
+
+
+    
+        fetchContractDocuments();
+    }, [contractId]);
 
     //sección personal
     useEffect(() => {
@@ -270,9 +287,81 @@ function ContractDetail() {
         }
     };
 
+    const handleDownloadDocument = async (documentId) => {
+        try {
+            const response = await axios.get(`http://127.0.0.1:5000/documents/${documentId}`, {
+                responseType: 'blob',
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `${documentId}.pdf`); // Nombre del archivo descargado
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (error) {
+            console.error("Error al descargar el documento:", error);
+            alert("Hubo un error al descargar el documento.");
+        }
+    };
 
+    const handleGenerateCotizacion = async () => {
+        try {
+            const response = await axios.post(
+                `http://127.0.0.1:5000/contracts/${contractId}/generate_cotizacion`
+            );
     
+            alert(response.data.message);
     
+            // Refrescar el listado de documentos
+            const updatedDocuments = await axios.get(
+                `http://127.0.0.1:5000/contracts/${contractId}/documents`
+            );
+            setContractDocuments(updatedDocuments.data);
+        } catch (error) {
+            console.error("Error al generar la cotización:", error);
+            alert("Hubo un error al generar la cotización.");
+        }
+    };
+    
+    const handleDeleteDocument = async (documentId) => {
+        if (!window.confirm("¿Estás seguro de que deseas eliminar este documento?")) return;
+    
+        try {
+            await axios.delete(`http://127.0.0.1:5000/documents/${documentId}`);
+            alert("Documento eliminado con éxito.");
+    
+            // Actualiza la lista de documentos
+            setContractDocuments((prevDocuments) =>
+                prevDocuments.filter((doc) => doc.id !== documentId)
+            );
+        } catch (error) {
+            console.error("Error al eliminar el documento:", error);
+            alert("Hubo un error al intentar eliminar el documento.");
+        }
+    };
+
+    const handleGenerateGuide = async () => {
+        try {
+            const response = await axios.post(
+                `http://127.0.0.1:5000/contracts/${contractId}/generate_guia_despacho`
+            );
+    
+            alert(response.data.message);
+    
+            // Refrescar el listado de documentos
+            const updatedDocuments = await axios.get(
+                `http://127.0.0.1:5000/contracts/${contractId}/documents`
+            );
+            setContractDocuments(updatedDocuments.data);
+        } catch (error) {
+            console.error("Error al generar la cotización:", error);
+            alert("Hubo un error al generar la cotización.");
+        }
+    };
+
+
+   
 
 // Modal para asignar equipamiento
 const Modal = ({
@@ -364,6 +453,8 @@ const Modal = ({
     );
 };
 
+
+
 // Modal para asignar Personal
 const PersonalModal = ({ availablePersonal, onClose, onAssign }) => {
     return (
@@ -397,6 +488,7 @@ const PersonalModal = ({ availablePersonal, onClose, onAssign }) => {
         </div>
     );
 };
+
 
 
     return (
@@ -548,22 +640,52 @@ const PersonalModal = ({ availablePersonal, onClose, onAssign }) => {
                         <table className="contracts-table">
                             <thead>
                                 <tr>
-                                    <th>Encabezado A</th>
-                                    <th>Encabezado B</th>
-                                    <th>Encabezado C</th>
+                                    <th>Código</th>
+                                    <th>Tipo</th>
+                                    <th>Fecha de Generación</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>Celda A</td>
-                                    <td>Celda B</td>
-                                    <td>Celda C</td>
+                            {contractDocuments && contractDocuments.length > 0 ?(   
+                            contractDocuments.map((doc) => (
+                                <tr key={doc.id}>
+                                    <td>{doc.document_code}</td>
+                                    <td>{doc.document_type}</td>
+                                    <td>{new Date(doc.generated_at).toLocaleDateString()}</td>
+                                    <td>
+                                        <div className='docs-group-btn'>
+                                        <div className='docs-first-btn'>
+                                        <button
+                                            className="remove-item"
+                                            onClick={() => handleDownloadDocument(doc.id)}
+                                        >
+                                            Descargar
+                                        </button>
+                                        </div>
+                                        <button
+                                            className="remove-item"
+                                            onClick={() => handleDeleteDocument(doc.id)}
+                                        >
+                                            Eliminar
+                                        </button>
+                                        </div>
+
+                                    </td>
                                 </tr>
+                            ))
+                         ): (
+                            <tr>
+                            <td colSpan="4">No hay documentos disponibles.</td>
+                        </tr>
+                        )} 
                             </tbody>
                         </table>
                     </fieldset>
-                    <button className='add-iventory-item'>Añadir</button>
-                    <button className='remove-item'>Eliminar</button>
+                    <div className='docs-action-btn'>
+                        <button className='add-iventory-item' onClick={handleGenerateCotizacion}>Crear Cotización</button>
+                        <button className='add-iventory-item' onClick={handleGenerateGuide}>Crear Guía DE/RE</button>
+                    </div>
                 </div>
             </div>
             {/* Renderizar modal */}

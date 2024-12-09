@@ -74,6 +74,8 @@ class Equipment(db.Model):
     equipment_name = db.Column(db.String(50))
     subcategory = db.relationship('Subcategory', backref=db.backref('equipments', lazy=True))
 
+    subcategory = db.relationship('Subcategory', backref='equipments')
+
 
 # Contratos
 class Contract(db.Model):

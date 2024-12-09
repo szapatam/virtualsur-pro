@@ -1220,3 +1220,133 @@ def download_document(document_id):
     except Exception as e:
         print(f"Error al descargar el documento: {str(e)}")
         return jsonify({"error": "No se pudo descargar el documento"}), 500
+
+@main.route('/documents/<int:document_id>', methods=['DELETE'])
+def delete_document(document_id):
+    try:
+        # Buscar el documento en la base de datos
+        document = Document.query.filter_by(id=document_id).first()
+
+        if not document:
+            return jsonify({"error": "Documento no encontrado"}), 404
+
+        # Eliminar el documento
+        db.session.delete(document)
+        db.session.commit()
+
+        return jsonify({"message": "Documento eliminado con éxito"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al eliminar el documento: {str(e)}")
+        return jsonify({"error": "No se pudo eliminar el documento"}), 500
+
+
+@main.route('/contracts/<int:contract_id>/generate_guia_despacho', methods=['POST'])
+def generate_guia_despacho(contract_id):
+    try:
+        # Obtener datos del contrato
+        contract = Contract.query.filter_by(contract_id=contract_id).first()
+        if not contract:
+            return jsonify({"error": "Contrato no encontrado"}), 404
+
+        # Datos del cliente
+        client = contract.client
+
+        # Equipamiento asignado
+        equipments = db.session.query(
+            Equipment.tech_code,
+            Equipment.equipment_name,
+            Subcategory.subcategory_name
+        ).join(
+            Subcategory, Subcategory.subcategory_id == Equipment.subcategory_id
+        ).join(
+            ContractEquipment, ContractEquipment.equipment_id == Equipment.equipment_id
+        ).filter(
+            ContractEquipment.contract_id == contract_id
+        ).all()
+        # Personal asignado
+        personal = db.session.query(
+            Personal.staff_name,
+            Role.role_name
+        ).join(
+            Role, Role.role_id == Personal.role_id
+        ).join(
+            ContractPersonal, ContractPersonal.staff_id == Personal.staff_id
+        ).filter(
+            ContractPersonal.contract_id == contract_id
+        ).all()
+
+        # Generar el PDF
+        pdf = FPDF()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_page()
+        pdf.set_font('Arial', 'B', 16)
+        pdf.set_fill_color(200, 200, 200)  # Color gris claro
+
+        # Título
+        pdf.cell(0, 10, 'Guía de Despacho/Retiro', ln=True, align='C')
+        pdf.ln(10)
+
+        # Datos del contrato
+        pdf.set_font('Arial', 'B', 12)
+        pdf.cell(0, 10, 'Datos del Contrato', ln=True)
+        pdf.set_font('Arial', '', 12)
+        pdf.cell(40, 10,'Cliente', fill=True, border=1, align='C')
+        pdf.cell(50, 10,f'{client.client_name}', border=1, align='C')
+        pdf.cell(40, 10,'Evento', fill=True, border=1, align='C')
+        pdf.cell(50, 10,f'{contract.event_name}', border=1, align='C')
+        pdf.ln(10)
+        pdf.cell(40, 10,'Lugar', fill=True, border=1, align='C')
+        pdf.cell(50, 10,f'{contract.event_location}', border=1, align='C')
+        pdf.cell(40, 10,'Metros Cuadrados', fill=True, border=1, align='C')
+        pdf.cell(50, 10,f'{contract.square_meters}',ln=True, border=1, align='C')
+        pdf.ln(10)
+
+        # Equipamiento
+        pdf.set_font('Arial', 'B', 12)
+        pdf.cell(0, 10, 'Equipamiento', ln=True)
+        pdf.set_font('Arial', '', 12)
+        pdf.cell(35, 10,'Código Técnico', fill=True, border=1, align='C')
+        pdf.cell(60, 10,'Nombre Equipo', fill=True, border=1, align='C')
+        pdf.cell(60, 10,'Subcategoría', fill=True, border=1, align='C')
+        pdf.cell(35, 10,'Descarga/Carga', fill=True, border=1, align='C', ln=True)
+
+        for equipment in equipments:
+            pdf.cell(35, 10, equipment.tech_code, border=1, align='C')
+            pdf.cell(60, 10, equipment.equipment_name, border=1, align='C')
+            pdf.cell(60, 10, equipment.subcategory_name, border=1, align='C')
+            pdf.cell(35, 10, '[   ] [   ]', border=1, ln=True, align='C')
+
+        pdf.ln(10)
+
+        # Personal
+        pdf.set_font('Arial', 'B', 12)
+        pdf.cell(0, 10, 'Personal Asignado', ln=True)
+        pdf.set_font('Arial', '', 12)
+        pdf.cell(40, 10, 'Nombre', border=1, align='C', fill=True)
+        pdf.cell(40, 10, 'Rol', border=1, ln=True, align='C', fill=True)
+
+        for person in personal:
+            pdf.cell(40, 10, person.staff_name, border=1, align='C')
+            pdf.cell(40, 10, person.role_name, border=1,align='C', ln=True)
+
+        # Guardar el PDF en un archivo binario
+        document_code = f"{contract.contract_code}-GUIA"
+        pdf_file = pdf.output(dest='S').encode('latin1')
+
+        new_document = Document(
+            document_code=document_code,
+            document_type='Guía de Despacho/Retiro',
+            generated_at=datetime.now(),
+            contract_id=contract_id,
+            file_content=pdf_file
+        )
+        db.session.add(new_document)
+        db.session.commit()
+
+        return jsonify({"message": "Guía de Despacho/Retiro generada con éxito", "document_code": document_code}), 201
+
+    except Exception as e:
+        print(f"Error generando guía de despacho/retiro: {str(e)}")
+        return jsonify({"error": "No se pudo generar la guía de despacho/retiro"}), 500
