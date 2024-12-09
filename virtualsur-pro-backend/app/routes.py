@@ -1,6 +1,8 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, make_response
 from sqlalchemy import func
-from .models import Cliente, Personal, Role, Equipment, Category, Subcategory, Contract, ContractEquipment, ContractPersonal
+from fpdf import FPDF
+from datetime import datetime
+from .models import Cliente, Personal, Role, Equipment, Category, Subcategory, Contract, ContractEquipment, ContractPersonal, Document
 from . import db
 
 main = Blueprint('main', __name__)
@@ -1027,3 +1029,194 @@ def get_available_personal():
     except Exception as e:
         print(f"Error fetching available personal: {str(e)}")
         return jsonify({"error": "Unable to fetch available personal"}), 500
+
+
+#Sección documentación
+
+class PDF(FPDF):
+    def header(self):
+        self.set_font('Arial', 'B', 12)
+        self.cell(0, 10, 'COTIZACIÓN', border=False, ln=True, align='C')
+        self.ln(10)
+
+    def add_section_title(self, title):
+        self.set_font('Arial', 'B', 10)
+        self.cell(0, 10, title, ln=True, border=False)
+        self.ln(5)
+
+    def add_table_row(self, col_widths, data, bold=False, fill=True):
+        self.set_font('Arial', 'B' if bold else '', 9)
+        for i, cell_data in enumerate(data):
+            self.cell(col_widths[i], 10, cell_data, border=1, align='C')
+        self.ln()
+
+    def add_line_break(self, height=5):
+        self.ln(height)
+
+@main.route('/contracts/<int:contract_id>/generate_cotizacion', methods=['POST'])
+def generate_cotizacion(contract_id):
+    try:
+        # Obtener los detalles del contrato y cliente
+        contract = Contract.query.get(contract_id)
+        client = contract.client
+
+        # Datos del proveedor (fijos)
+        provider_data = {
+            "Razón Social": "VisualSur Pro",
+            "Contacto": "visualsurpro@gmail.com",
+            "Dirección": "Bernardo O'Higgins 1117",
+            "Ciudad": "Temuco",
+            "Rut": "77.123.123-3",
+            "Teléfono": "961398522"
+        }
+
+        # Crear el PDF
+        pdf = PDF()
+        pdf.add_page()
+        pdf.set_fill_color(200, 200, 200)  # Color gris claro
+        pdf.set_text_color(0, 0, 0)  # Texto negro
+
+        # Sección: Datos del Cliente
+        pdf.add_section_title('DATOS DEL CLIENTE')
+        pdf.cell(40,10, "Nombre Cliente", border=1, align='C', fill=True)
+        pdf.cell(50,10, client.client_name, border=1, align='C')
+        pdf.cell(40,10, "Dirección", border=1, align='C', fill=True)
+        pdf.cell(50,10, client.client_address, border=1, align='C')
+        pdf.ln()
+
+        pdf.cell(40,10, "Correo", border=1, align='C', fill=True)
+        pdf.cell(50,10, client.client_email, border=1, align='C')
+        pdf.cell(40,10, "RUT", border=1, align='C', fill=True)
+        pdf.cell(50,10, client.client_rut, border=1, align='C')
+        pdf.ln()
+
+        # Línea de separación
+        pdf.add_line_break()
+
+        # Sección: Datos del Proveedor
+        pdf.add_section_title('DATOS DEL PROVEEDOR')
+        # Fila del encabezado
+        pdf.cell(40, 10, "Razón Social", border=1, align='C', fill=True)
+        pdf.cell(50, 10, provider_data['Razón Social'], border=1, align='C', fill=False)
+        pdf.cell(40, 10, "Ciudad", border=1, align='C', fill=True)
+        pdf.cell(50, 10, provider_data['Ciudad'], border=1, align='C', fill=False)
+        pdf.ln()  # Salto de línea
+
+        pdf.cell(40, 10, "Contacto", border=1, align='C', fill=True)
+        pdf.cell(50, 10, provider_data['Contacto'], border=1, align='C', fill=False)
+        pdf.cell(40, 10, "RUT", border=1, align='C', fill=True)
+        pdf.cell(50, 10, provider_data['Rut'], border=1, align='C', fill=False)
+        pdf.ln()
+
+        pdf.cell(40, 10, "Dirección", border=1, align='C', fill=True)
+        pdf.cell(50, 10, provider_data['Dirección'], border=1, align='C', fill=False)
+        pdf.cell(40, 10, "Teléfono", border=1, align='C', fill=True)
+        pdf.cell(50, 10, provider_data['Teléfono'], border=1, align='C', fill=False)
+        pdf.ln()
+
+        pdf.add_line_break()
+
+        # Sección: Detalle del Producto
+        pdf.add_section_title('DATOS DEL PRODUCTO A ADQUIRIR')
+
+        total_without_additional = (contract.square_meters * contract.square_meter_value)
+        
+        # Tabla del producto        
+        pdf.cell(20,10, "Cantidad", border=1, align='C', fill=True)
+        pdf.cell(80,10, "Descripción del Producto", border=1, align='C', fill=True)
+        pdf.cell(30,10, "Precio Unitario", border=1, align='C', fill=True)
+        pdf.cell(20,10, "Cantidad", border=1, align='C', fill=True)
+        pdf.cell(40,10, "Precio Total", border=1, align='C', fill=True) 
+        pdf.ln()
+        pdf.cell(20,10,"1",border=1, align='C', fill=False)
+        pdf.cell(80,10,f'Servicios Pantallas LED\'s y Montaje - {contract.square_meters}m²',border=1, align='C', fill=False)
+        pdf.cell(30,10,f'${int(contract.square_meter_value)}',border=1, align='C', fill=False)
+        pdf.cell(20,10,f'{int(contract.square_meters)}',border=1, align='C', fill=False)
+        pdf.cell(40,10,f'${int(total_without_additional)}',border=1, align='C', fill=False)
+        pdf.ln()
+        pdf.cell(20,10,"1", border=1, align='C', fill=False)
+        pdf.cell(80,10,"Costo Adicional", border=1, align='C', fill=False)
+        pdf.cell(30,10,f'${int(contract.additional_cost)}', border=1, align='C', fill=False)
+        pdf.cell(20,10,"1", border=1, align='C', fill=False)
+        pdf.cell(40,10,f'${int(contract.additional_cost)}', border=1, align='C', fill=False)
+        pdf.ln()
+        pdf.add_line_break()
+
+        # Cálculo de valores
+        neto = contract.total_cost / 1.19
+        iva = contract.total_cost - neto
+        pdf.add_section_title('VALORES')
+
+        pdf.cell(40,10, "NETO", border=1, align='C', fill=True)
+        pdf.cell(50,10, f'${int(round(neto, 2))}', border=1, align='C')
+        pdf.ln()
+        pdf.cell(40,10, "IVA (19%)", border=1, align='C', fill=True)
+        pdf.cell(50,10, f'${int(round(iva, 2))}', border=1, align='C')
+        pdf.ln()
+        pdf.cell(40,10, "TOTAL", border=1, align='C', fill=True)
+        pdf.cell(50,10, f'${int(round(contract.total_cost, 2))}', border=1, align='C')
+
+        # Guardar el archivo en memoria
+        pdf_output = pdf.output(dest='S').encode('latin1')  # Cambiar encoding para soportar caracteres latinos
+
+        # Código del documento
+        document_code = f"{contract.contract_code}-COT"
+        now = datetime.now()
+
+        # Guardar en la base de datos
+        document = Document(
+            document_code=document_code,
+            document_type="Cotización",
+            file_content=pdf_output,
+            generated_at=now,
+            contract_id=contract.contract_id
+        )
+        db.session.add(document)
+        db.session.commit()
+
+        return jsonify({"message": "Cotización generada con éxito", "document_code": document_code}), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error generating cotización: {str(e)}")
+        return jsonify({"error": "No se pudo generar la cotización"}), 500
+    
+@main.route('/contracts/<int:contract_id>/documents', methods=['GET'])
+def get_documents(contract_id):
+    try:
+        documents = Document.query.filter_by(contract_id=contract_id).all()
+        if not documents:
+            return jsonify([]), 200
+        result = [
+            {
+                "id": doc.id,
+                "document_code": doc.document_code,
+                "document_type": doc.document_type,
+                "generated_at": doc.generated_at.isoformat()
+            }
+            for doc in documents
+        ]
+        return jsonify(result), 200
+    except Exception as e:
+        print(f"Error fetching documents: {str(e)}")
+        return jsonify({"error": "No se pudo obtener los documentos"}), 500
+    
+# Ruta para descargar el contenido de un documento
+@main.route('/documents/<int:document_id>', methods=['GET'])
+def download_document(document_id):
+    try:
+        # Buscar el documento por su ID
+        document = Document.query.filter_by(id=document_id).first()
+
+        if not document:
+            return jsonify({"error": "Documento no encontrado"}), 404
+
+        # Preparar el contenido binario para la descarga
+        response = make_response(document.file_content)
+        response.headers.set('Content-Type', 'application/pdf')
+        response.headers.set('Content-Disposition', f'attachment; filename={document.document_code}.pdf')
+
+        return response
+    except Exception as e:
+        print(f"Error al descargar el documento: {str(e)}")
+        return jsonify({"error": "No se pudo descargar el documento"}), 500

@@ -94,6 +94,9 @@ class Contract(db.Model):
     # Relación con la tabla Client
     client = db.relationship('Cliente', back_populates='contracts')
 
+    #Relación  con Documents
+    documents = db.relationship('Document', back_populates='contract')
+
     #Metodo para generar un codigo unico
     @staticmethod
     def generate_contract_code():
@@ -136,3 +139,16 @@ class ContractPersonal(db.Model):
     def __init__(self, contract_id, staff_id):
         self.contract_id = contract_id
         self.staff_id = staff_id
+
+#Sección Documentación
+class Document(db.Model):
+    __tablename__ = 'documents'
+
+    id = db.Column(db.Integer, primary_key=True)
+    document_code = db.Column(db.String(50), unique=True, nullable=False)  # Ejemplo: CT-001-COT
+    document_type = db.Column(db.String(50), nullable=False)  # Ejemplo: "Cotización"
+    file_content = db.Column(db.LargeBinary, nullable=False)  # Archivo PDF en binario
+    generated_at = db.Column(db.DateTime, nullable=False)  # Fecha y hora de generación
+    contract_id = db.Column(db.Integer, db.ForeignKey('contracts.contract_id'), nullable=False)
+    # Relación con contratos
+    contract = db.relationship('Contract', back_populates='documents')
