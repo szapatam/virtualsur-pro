@@ -1,23 +1,36 @@
-/* src/pages/home/Home.css */
-
 .home-container {
-    padding: 20px;
-    background-color: #f4f4f4;
-    height: calc(100vh - 60px);
-    /* Altura total menos la barra superior */
+    height: calc(100vh - 60px); /* Ajustar altura para excluir la barra superior */
     display: flex;
     flex-direction: column;
-    align-items: center;
+}
+
+.welcome-header {
+    color: rgb(0, 0, 0);
+    text-align: center;
+    border-radius: 8px;
+}
+
+.main-section {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 20px;
+    flex: 1; /* Expandir para ocupar espacio restante */
+}
+
+.calendar-section {
+    background-color: #f1ecec; /* Gris */
+    flex: 2; /* Ocupa 2 partes de 3 */
+    margin-right: 20px;
+    padding: 20px;
+    border-radius: 15px;
+}
+
+.yellow-section {
+    background-color: #f1ecec; /* Amarillo */
+    flex: 1; /* Ocupa 1 parte de 3 */
+    padding: 20px;
+    border-radius: 15px;
+    display: flex;
     justify-content: center;
-}
-
-.home-container h1 {
-    font-size: 2.5em;
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.home-container p {
-    font-size: 1.2em;
-    color: #666;
 }

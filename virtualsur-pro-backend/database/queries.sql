@@ -95,3 +95,8 @@ INSERT INTO subcategories (subcategory_name, category_id, codigo_tecnico) VALUES
 ('Clamps', 6, 'CLP'),
 ('Procesadores de videos', 7, 'PRV'),
 ('Computadores de la empresa', 7, 'CMP');
+
+
+
+-- CREACION DE USUARIO ADMIN
+

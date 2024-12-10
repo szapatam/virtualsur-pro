@@ -10,7 +10,7 @@ function Topbar( {onMenuClick} ) {
       <div className="topbar-left">
         <FontAwesomeIcon icon={faBars} className="topbar-menu-icon" onClick={onMenuClick} />
         <Link to="/" className="topbar-logo-link">
-          <h2 className="topbar-logo">VirtualSur Pro</h2>
+          <h2 className="topbar-logo">VisualSur Pro</h2>
         </Link>
       </div>
       <div className="topbar-right">

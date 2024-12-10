@@ -1,8 +1,9 @@
 from flask import Blueprint, jsonify, request, make_response
 from sqlalchemy import func
+from sqlalchemy.sql.expression import case
 from fpdf import FPDF
 from datetime import datetime
-from .models import Cliente, Personal, Role, Equipment, Category, Subcategory, Contract, ContractEquipment, ContractPersonal, Document
+from .models import Cliente, Personal, Role, Equipment, Category, Subcategory, Contract, ContractEquipment, ContractPersonal, Document 
 from . import db
 
 main = Blueprint('main', __name__)
@@ -801,7 +802,7 @@ def get_available_equipments():
          .group_by(Equipment.subcategory_id)\
          .subquery()
 
-        # Consulta principal para unir subcategorías, conteo y detalles
+        # Consulta principal para unir subcategorías, conteo y detalles 
         available_equipments = db.session.query(
             Subcategory.subcategory_id,
             Subcategory.subcategory_name,
@@ -1509,4 +1510,128 @@ def generate_contracts_report():
         return response
 
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Sección Resumen
+
+from flask import request
+
+@main.route('/contracts/events', methods=['GET'])
+def get_contract_events():
+    try:
+        # Obtener parámetros de filtro (mes y año)
+        month = request.args.get('month', type=int)
+        year = request.args.get('year', type=int)
+
+        # Base query
+        query = db.session.query(
+            Contract.contract_code,
+            Contract.event_execution_date,
+            Contract.event_name,
+            Contract.contract_id
+        )
+
+        # Aplicar filtros opcionales
+        if month:
+            query = query.filter(db.extract('month', Contract.event_execution_date) == month)
+        if year:
+            query = query.filter(db.extract('year', Contract.event_execution_date) == year)
+
+        # Consultar solo eventos futuros si no hay filtros
+        if not month and not year:
+            query = query.filter(Contract.event_execution_date >= datetime.now())
+
+        events = query.all()
+
+        # Formatear los resultados en JSON
+        result = [
+            {
+                "contract_code": event.contract_code,
+                "event_execution_date": event.event_execution_date.strftime('%Y-%m-%d'),
+                "event_name": event.event_name,
+                "contract_id": event.contract_id
+            }
+            for event in events
+        ]
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@main.route('/inventory/levels', methods=['GET'])
+def get_inventory_levels():
+    try:
+        # Calcular el total de equipos y equipos asignados (general)
+        # pylint: disable=not-callable
+        total_units = db.session.query(func.count(Equipment.equipment_id)).scalar() or 0
+        total_assigned = db.session.query(func.count(Equipment.equipment_id)).filter(
+            Equipment.status_equipment == 'Asignado'
+        ).scalar() or 0
+        general_occupancy = (total_assigned / total_units * 100) if total_units > 0 else 0
+
+        print(f"Total Units: {total_units}, Total Assigned: {total_assigned}, General Occupancy: {general_occupancy}%")
+
+        # Consulta para categorías y subcategorías
+        categories_query = db.session.query(
+            Category.category_name,
+            Subcategory.subcategory_name,
+            # pylint: disable=not-callable
+            func.count(Equipment.equipment_id).label('total_quantity'),
+            func.sum(
+                case(
+                    (Equipment.status_equipment == 'Asignado', 1),  # Condición y resultado
+                    else_=0  # Valor predeterminado
+                )
+            ).label('assigned_quantity')
+        ).join(Subcategory, Subcategory.subcategory_id == Equipment.subcategory_id
+        ).join(Category, Category.category_id == Subcategory.category_id
+        ).group_by(Category.category_name, Subcategory.subcategory_name)
+
+        # Ejecutar consulta
+        categories = categories_query.all()
+
+        # Procesar resultados
+        category_summary = {}
+        for category_name, subcategory_name, total_quantity, assigned_quantity in categories:
+            # Manejar casos donde assigned_quantity sea NULL
+            assigned_quantity = assigned_quantity or 0
+            if category_name not in category_summary:
+                category_summary[category_name] = {
+                    "subcategories": [],
+                    "total_occupancy": 0,
+                    "total_count": 0
+                }
+
+            occupancy = (assigned_quantity / total_quantity * 100) if total_quantity > 0 else 0
+            category_summary[category_name]["subcategories"].append({
+                "subcategory_name": subcategory_name,
+                "total_quantity": total_quantity,
+                "assigned_quantity": assigned_quantity,
+                "occupancy": occupancy
+            })
+            category_summary[category_name]["total_occupancy"] += occupancy
+            category_summary[category_name]["total_count"] += 1
+
+        # Calcular promedio por categoría
+        for category_name, data in category_summary.items():
+            data["total_occupancy"] = data["total_occupancy"] / data["total_count"]
+
+        # Formatear respuesta
+        response = {
+            "general_occupancy": general_occupancy,
+            "categories": [
+                {
+                    "category_name": category_name,
+                    "total_occupancy": data["total_occupancy"],
+                    "subcategories": data["subcategories"]
+                }
+                for category_name, data in category_summary.items()
+            ]
+        }
+
+        return jsonify(response), 200
+
+    except Exception as e:
+        print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500

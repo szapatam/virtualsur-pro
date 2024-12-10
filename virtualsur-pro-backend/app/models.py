@@ -1,5 +1,7 @@
 from . import db
 
+
+
 #Clase ROL
 class Role (db.Model):
     __tablename__ = 'roles'
