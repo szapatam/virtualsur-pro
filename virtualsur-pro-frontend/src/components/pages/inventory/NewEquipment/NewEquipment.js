@@ -14,6 +14,38 @@ function NewEquipment() {
   const [equipment_name, setEquipmentName] = useState('');
   const [mensaje, setMensaje] = useState('');
 
+  // Estados para los errores
+  const [errors, setErrors] = useState({});
+
+
+        // Validar los campos del formulario
+        const validateFields = () => {
+          const newErrors = {};
+  
+          if (!selectedCategory.trim()) {
+              newErrors.selectedCategory = 'La Categoría es obligatoria.';
+          }
+          if (!selectedSubcategory.trim()) {
+            newErrors.selectedSubcategory = 'La Subcategoría es obligatoria.';
+          }
+          if (!equipment_name.trim()) {
+              newErrors.equipment_name = 'El nombre del equipo es obligatorio.';
+          }
+          if (!cantidad.trim()) {
+              newErrors.cantidad = 'La cantidad es obligatoria.';
+          }
+          if (!estado.trim()) {
+              newErrors.estado = 'El estado es obligatorio.';
+          }
+          if (cantidad.trim() && !/^\d+$/.test(cantidad)) {
+              newErrors.clientPhone = 'la cantidad debe contener solo números.';
+          }
+          
+  
+          setErrors(newErrors);
+          return Object.keys(newErrors).length === 0; // Si no hay errores, devuelve true
+      };
+
   // Cargar categorías y subcategorías al cargar el componente
   useEffect(() => {
     const fetchCategories = async () => {
@@ -32,9 +64,15 @@ const handleCategoryChange = async (e) => {
   setSubcategories(response.data);
 };
 
+
+
 // Manejar el envío del formulario
 const handleSubmit = async (e) => {
   e.preventDefault();
+
+  if (!validateFields()) {
+    return; // Si la validación falla, no continúa
+}
 
   try {
       // Datos del equipo a enviar al backend
@@ -113,7 +151,6 @@ const handleSubmit = async (e) => {
               value={cantidad}
               onChange={(e) => setCantidad(e.target.value)}
               min="1"
-              required
             />
           </div>
           <div>
@@ -131,6 +168,16 @@ const handleSubmit = async (e) => {
         </div>
 
       </form>
+      {Object.keys(errors).length > 0 && (
+            <div className="error-list">
+                <h4>Por favor, corrige los siguientes errores:</h4>
+                <ul>
+                {Object.keys(errors).map((key) => (
+                    <li key={key}>{errors[key]}</li>
+                ))}
+                </ul>
+            </div>
+            )}
     </div>
   );
 }

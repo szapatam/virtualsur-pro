@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./Login.css";
 import { useNavigate } from "react-router-dom";
+import logo from './visualsur.jpg';
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -14,30 +15,19 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      <h2>Iniciar Sesión</h2>
-      <form onSubmit={handleSubmit} className="login-form">
-        <div className="form-group">
+      <div className="left-section">
+        <img src={logo} alt="Empresa Logo" className="logo-image" />
+      </div>
+      <div className="right-section">
+        <form className="login-form">
+          <h2>Iniciar Sesión</h2>
           <label htmlFor="username">Usuario:</label>
-          <input
-            type="text"
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
+          <input type="text" id="username" placeholder="Usuario" />
           <label htmlFor="password">Contraseña:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" className="login-button" onClick={() => navigate('/')}>Ingresar</button>
-      </form>
+          <input type="password" id="password" placeholder="Contraseña" />
+          <button type="submit" onClick={() => navigate('/')}>Ingresar</button>
+        </form>
+      </div>
     </div>
   );
 };

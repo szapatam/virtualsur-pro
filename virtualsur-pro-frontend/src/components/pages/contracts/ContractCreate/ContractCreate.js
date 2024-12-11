@@ -18,6 +18,9 @@ function NewContract() {
     const [totalCost, setTotalCost] = useState('0');
     const [clients, setClients] = useState([]);
 
+    // Estados para los errores
+    const [errors, setErrors] = useState({});
+
     //Obtener clientes disponibles
     useEffect(() => {
         const fetchClients = async () =>{
@@ -37,9 +40,31 @@ function NewContract() {
         setTotalCost(cost);
     }, [squareMeters, squareMeterValue, additionalCost]);
 
+    // Validar formulario
+    const validateForm = () => {
+        const newErrors = {};
+        if (!clientId) newErrors.clientId = 'Debe seleccionar un cliente.';
+        if (!eventName) newErrors.eventName = 'Debe ingresar el nombre del evento.';
+        if (!startDate) newErrors.startDate = 'Debe ingresar la fecha de inicio del contrato.';
+        if (!executionDate) newErrors.executionDate = 'Debe ingresar la fecha de ejecución del evento.';
+        if (!location) newErrors.location = 'Debe ingresar la ubicación del evento.';
+        if (!squareMeters || parseFloat(squareMeters) <= 0)
+            newErrors.squareMeters = 'Debe ingresar un valor válido para los metros cuadrados.';
+        if (!squareMeterValue || parseFloat(squareMeterValue) <= 0)
+            newErrors.squareMeterValue = 'Debe ingresar un valor válido para el costo por metro cuadrado.';
+        if (!additionalCost || parseFloat(additionalCost) < 0)
+            newErrors.additionalCost = 'Debe ingresar un costo adicional válido (puede ser 0).';
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+
     //Manejar la creación del contrato
     const handleCreateContract = async (e) => {
         e.preventDefault();
+
+        if (!validateForm()) return;
 
         const NewContract ={
             client_id: clientId,
@@ -87,36 +112,56 @@ function NewContract() {
                                         </option>
                                     ))}
                                 </select>
+                                
                                 <label className='event-name'>Nombre del evento:</label>
                                 <input type='text' className='contract-form' value={eventName} onChange={(e) => setEventName(e.target.value)}></input>
+                                
                             </div>
                             <div className='form-row'>
                                 <label>Fecha Inicio contrato: </label>
                                 <input type='date' className='contract-form' value={startDate} onChange={(e) => setStartDate(e.target.value)}></input>
+                                
                                 <label>Fecha Ejec. evento:</label>
                                 <input type='date' className='contract-form' value={executionDate} onChange={(e) => setExecutionDate(e.target.value)}></input>
+                                
                             </div>
                             <div className='form-row'>
                                 <label>Lugar del evento: </label>
                                 <input type='text' className='contract-form' value={location} onChange={(e) => setLocation(e.target.value)}></input>
+                                
                                 <label>Metros cuadrados:</label>
                                 <input type='text' className='contract-form' value={squareMeters} onChange={(e) => setSquareMeters(e.target.value)}></input>
+                                
                             </div>
                             <div className='form-row'>
                                 <label>Valor metro cuadrado: </label>
                                 <input type='number' className='contract-form' value={squareMeterValue} onChange={(e) => setSquareMeterValue(e.target.value)}></input>
+                                
                                 <label>Costo Adicional:</label>
                                 <input type='number' className='contract-form' value={additionalCost} onChange={(e) => setAdditionalCost(e.target.value)}></input>
+                                
                             </div>
                             <div className='form-final-price-row'>
                                 <label className='final-cost'>COSTO TOTAL:</label>
                                 <input type='number' className='contract-form' value={totalCost} onChange={(e) => setTotalCost(e.target.value)}></input>
+                                
                             </div>
                         </fieldset>
                         <div className='save-button-container'>
                             <button className='submit-button' type='submit'> Crear Contrato</button>
                         </div>
-                        
+                        {/*LISTADO DE ERRROES EN VALIDACION FORM*/}
+                        {Object.keys(errors).length > 0 && (
+                        <div className="error-list">
+                            <h4>Por favor, corrige los siguientes errores:</h4>
+                            <ul>
+                            {Object.keys(errors).map((key) => (
+                                <li key={key}>{errors[key]}</li>
+                            ))}
+                            </ul>
+                        </div>
+                        )}
+
                     </div>
                     </form>
 

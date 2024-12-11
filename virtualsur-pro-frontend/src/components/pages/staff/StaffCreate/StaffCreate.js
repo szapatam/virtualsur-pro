@@ -19,6 +19,47 @@ function StaffCreate() {
     const [status, setStatus] = useState('');
     const [mensaje, setMensaje] = useState('');
 
+    // Estados para los errores
+    const [errors, setErrors] = useState({});
+
+        // Validar los campos del formulario
+        const validateFields = () => {
+          const newErrors = {};
+  
+          if (!staffName.trim()) {
+              newErrors.staffName = 'El nombre del Personal es obligatorio.';
+          }
+          if (!staffRut.trim()) {
+            newErrors.staffRut = 'El RUT del cliente es obligatorio.';
+          }
+          if (!staffEmail.trim()) {
+              newErrors.staffEmail = 'El correo electrónico es obligatorio.';
+          }
+          if (!staffAddress.trim()) {
+              newErrors.staffAddress = 'La dirección es obligatorio.';
+          }
+          if (!staffPhone.trim()) {
+              newErrors.staffPhone = 'El teléfono es obligatorio.';
+          }
+          if (!roleId.trim()) {
+            newErrors.roleId = 'El Rol es obligatorio.';
+          }
+           else if (!/\S+@\S+\.\S+/.test(staffEmail)) {
+              newErrors.staffEmail = 'El formato del correo es inválido.';
+          }
+           else if (!/^\d{7,8}-[0-9Kk]$/.test(staffRut)) {
+              newErrors.staffRut = 'El formato del RUT es inválido.';
+          }
+          if (staffPhone.trim() && !/^\d+$/.test(staffPhone)) {
+              newErrors.clientPhone = 'El teléfono debe contener solo números.';
+          }
+          
+  
+          setErrors(newErrors);
+          return Object.keys(newErrors).length === 0; // Si no hay errores, devuelve true
+      };
+
+
     useEffect(() => {
       const fetchRoles = async () => {
           try {
@@ -38,6 +79,10 @@ function StaffCreate() {
     //Manejo de envio de formulario
     const handleSubmit = async (e) => {
       e.preventDefault();
+
+      if (!validateFields()) {
+        return; // Si la validación falla, no continúa
+    }
 
       try {
         //Datos del personal a enviar al backend
@@ -126,6 +171,16 @@ function StaffCreate() {
             <button type="submit" className="save-button">Guardar Cambios</button>
         </div> 
       </form>
+      {Object.keys(errors).length > 0 && (
+            <div className="error-list">
+                <h4>Por favor, corrige los siguientes errores:</h4>
+                <ul>
+                {Object.keys(errors).map((key) => (
+                    <li key={key}>{errors[key]}</li>
+                ))}
+                </ul>
+            </div>
+            )}
     </div>
   );
 }

@@ -17,9 +17,48 @@ function ClientCreate() {
     const [clientPhone, setClientPhone] = useState('');
     const [mensaje, setMensaje] = useState('');
 
+    // Estados de valicación
+    const [errors, setErrors] = useState({});
+
+        // Validar los campos del formulario
+        const validateFields = () => {
+            const newErrors = {};
+    
+            if (!clientName.trim()) {
+                newErrors.clientName = 'El nombre del cliente es obligatorio.';
+            }
+            if (!clientEmail.trim()) {
+                newErrors.clientEmail = 'El correo electrónico es obligatorio.';
+            }
+            if (!clientAddress.trim()) {
+                newErrors.clientAddress = 'La dirección es obligatorio.';
+            }
+            if (!clientPhone.trim()) {
+                newErrors.clientPhone = 'El teléfono es obligatorio.';
+            } else if (!/\S+@\S+\.\S+/.test(clientEmail)) {
+                newErrors.clientEmail = 'El formato del correo es inválido.';
+            }
+            if (!clientRut.trim()) {
+                newErrors.clientRut = 'El RUT del cliente es obligatorio.';
+            } else if (!/^\d{7,8}-[0-9Kk]$/.test(clientRut)) {
+                newErrors.clientRut = 'El formato del RUT es inválido.';
+            }
+            if (clientPhone.trim() && !/^\d+$/.test(clientPhone)) {
+                newErrors.clientPhone = 'El teléfono debe contener solo números.';
+            }
+            
+    
+            setErrors(newErrors);
+            return Object.keys(newErrors).length === 0; // Si no hay errores, devuelve true
+        };
+
     // Manejar el envío del formulario
     const handleSubmit = async (e) => {
         e.preventDefault(); //Evitar recarga de pagina cuando se envia.
+
+        if (!validateFields()) {
+            return; // Si la validación falla, no continúa
+        }
 
         try {
             // Se crea objeto para guardar datos del cliente a enviar al backend
@@ -75,7 +114,6 @@ function ClientCreate() {
                             value={clientName}
                             onChange={(e) => setClientName(e.target.value)}
                             placeholder="Ejemplo de Nombre"
-                            required
                         />
                     </div>
                     <div className="form-group">
@@ -87,7 +125,6 @@ function ClientCreate() {
                             value={clientEmail}
                             onChange={(e) => setClientEmail(e.target.value)}
                             placeholder="test@ejemplo.com"
-                            required
                         />
                     </div>
                     <div className="form-group">
@@ -129,7 +166,18 @@ function ClientCreate() {
                 </div>
 
             </form>
+            {Object.keys(errors).length > 0 && (
+            <div className="error-list">
+                <h4>Por favor, corrige los siguientes errores:</h4>
+                <ul>
+                {Object.keys(errors).map((key) => (
+                    <li key={key}>{errors[key]}</li>
+                ))}
+                </ul>
+            </div>
+            )}
         </div>
+        
     );
 }
 
