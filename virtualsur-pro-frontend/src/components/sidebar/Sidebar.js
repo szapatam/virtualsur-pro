@@ -45,9 +45,7 @@ function Sidebar({ isVisible }) {
               Documentos/Reportes
             </a>
             <ul>
-              <li><Link to="/docs/NewDocs" >Generar Documentos</Link></li>
               <li><Link to="/NewReport">Reporte de Contratos</Link></li>
-              <li><Link to="/InventoryHistory">Histórico de Inventario</Link></li>
             </ul>
           </li>
         </ul>

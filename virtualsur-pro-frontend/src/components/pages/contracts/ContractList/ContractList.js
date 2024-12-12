@@ -34,20 +34,20 @@ function ContractList() {
     const handleDeleteContract = async (contractId) => {
         const confirmDelete = window.confirm("¿Está seguro de que desea eliminar este contrato?");
         if (!confirmDelete) {
-          return;
+            return;
         }
-      
+
         try {
-          await axios.delete(`http://127.0.0.1:5000/contracts/${contractId}`);
-          alert('Contrato eliminado con éxito.');
-      
-          // Actualizar la lista de contratos después de la eliminación
-          setContracts(contracts.filter(contract => contract.contract_id !== contractId));
+            await axios.delete(`http://127.0.0.1:5000/contracts/${contractId}`);
+            alert('Contrato eliminado con éxito.');
+
+            // Actualizar la lista de contratos después de la eliminación
+            setContracts(contracts.filter(contract => contract.contract_id !== contractId));
         } catch (error) {
-          console.error('Error al eliminar el contrato:', error);
-          alert('Hubo un error al eliminar el contrato.');
+            console.error('Error al eliminar el contrato:', error);
+            alert('Hubo un error al eliminar el contrato. Existen recursos asignados.');
         }
-      };
+    };
 
     return (
         <div className="contract-list-container">
@@ -98,26 +98,26 @@ function ContractList() {
                         </tr>
                     </thead>
                     <tbody>
-                    {contracts.map((contract) => (
-                        <tr key={contract.contract_id}>
-                            <td>{contract.contract_code}</td>
-                            <td>{contract.client_name}</td>
-                            <td>{contract.event_name}</td>
-                            <td>{contract.contract_start_date}</td>
-                            <td>{contract.event_execution_date}</td>
-                            <td>{contract.event_location}</td>
-                            <td>{contract.square_meters}</td>
-                            <td>{contract.total_cost}</td>
-                            <td>
-                                <button onClick={() => navigate(`/contract/${contract.contract_id}`)} className="action-button edit">
-                                    <FontAwesomeIcon icon={faEdit} /> Ver/Editar
-                                </button>
-                                <button className="action-button delete" onClick={() => handleDeleteContract(contract.contract_id)}>
-                                    <FontAwesomeIcon icon={faTrash} /> Eliminar
-                                </button>
-                            </td>
-                        </tr>
-                    ))}                        
+                        {contracts.map((contract) => (
+                            <tr key={contract.contract_id}>
+                                <td>{contract.contract_code}</td>
+                                <td>{contract.client_name}</td>
+                                <td>{contract.event_name}</td>
+                                <td>{contract.contract_start_date}</td>
+                                <td>{contract.event_execution_date}</td>
+                                <td>{contract.event_location}</td>
+                                <td>{contract.square_meters}</td>
+                                <td>{contract.total_cost}</td>
+                                <td>
+                                    <button onClick={() => navigate(`/contract/${contract.contract_id}`)} className="action-button edit">
+                                        <FontAwesomeIcon icon={faEdit} /> Ver/Editar
+                                    </button>
+                                    <button className="action-button delete" onClick={() => handleDeleteContract(contract.contract_id)}>
+                                        <FontAwesomeIcon icon={faTrash} /> Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             </div>
