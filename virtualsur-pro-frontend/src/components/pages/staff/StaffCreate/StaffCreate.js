@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import './StaffCreate.css';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../../../api';
 
 function StaffCreate() {
 
@@ -63,7 +63,7 @@ function StaffCreate() {
     useEffect(() => {
       const fetchRoles = async () => {
           try {
-              const response = await axios.get('http://127.0.0.1:5000/roles');
+              const response = await api.get('http://127.0.0.1:5000/roles');
               console.log(response.data); // Asegúrate de que sea un array
               setRoles (response.data)
 
@@ -98,7 +98,7 @@ function StaffCreate() {
       console.log(nuevoPersonal);
 
       //Solicitud POST al backend para nuevo personal
-      const response = await axios.post('http://127.0.0.1:5000/personal', nuevoPersonal);
+      const response = await api.post('http://127.0.0.1:5000/personal', nuevoPersonal);
       
       setMensaje(response.data.mensaje)
       alert("Personal creado con exito.")

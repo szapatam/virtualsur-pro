@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import './InventoryLevels.css';
+import api from '../../api';
 
 const InventoryLevels = () => {
   const [inventoryData, setInventoryData] = useState([]);
@@ -8,7 +8,7 @@ const InventoryLevels = () => {
   useEffect(() => {
     const fetchInventoryLevels = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:5000/inventory/levels');
+        const response = await api.get('http://127.0.0.1:5000/inventory/levels');
         setInventoryData(response.data.categories);
       } catch (error) {
         console.error('Error fetching inventory levels:', error);

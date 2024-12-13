@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './StaffDetail.css';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../../../api';
 
 function StaffDetail() {
     const navigate = useNavigate();
@@ -22,7 +22,7 @@ function StaffDetail() {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:5000/roles');
+        const response = await api.get('http://127.0.0.1:5000/roles');
         setRoles(response.data);
       } catch (error) {
         console.error('Error al obtener los roles:', error);
@@ -35,7 +35,7 @@ function StaffDetail() {
       // Fetch the details of the staff by id
       const fetchStaffDetails = async () => {
         try {
-          const response = await axios.get(`http://127.0.0.1:5000/personal/${staffId}`);
+          const response = await api.get(`http://127.0.0.1:5000/personal/${staffId}`);
           const staffData = response.data;
   
           setStaffName(staffData.staff_name);
@@ -67,10 +67,13 @@ function StaffDetail() {
           status: status
         };
   
-        const response = await axios.put(`http://127.0.0.1:5000/personal/${staffId}`, updatedStaff);
+        const response = await api.put(`http://127.0.0.1:5000/personal/${staffId}`, updatedStaff);
         setMensaje(response.data.message);
+        alert('Personal actualizado con éxito.');
+        navigate('/personal');  // Navegar de vuelta a la lista de inventario
       } catch (error) {
         console.error('Error al actualizar el personal:', error);
+        alert('Error al actualizar el personal.')
         setMensaje('Hubo un error al actualizar los datos del personal.');
       }
     };

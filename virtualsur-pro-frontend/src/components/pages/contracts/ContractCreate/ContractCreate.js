@@ -1,7 +1,7 @@
 import {React, useEffect, useState} from 'react';
 import './ContractCreate.css';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../../../api';
 function NewContract() {
 
     const navigate = useNavigate();
@@ -25,7 +25,7 @@ function NewContract() {
     useEffect(() => {
         const fetchClients = async () =>{
             try {
-                const response = await axios.get('http://127.0.0.1:5000/clientes')
+                const response = await api.get('http://127.0.0.1:5000/clientes')
                 setClients(response.data);
             } catch (error){
                 console.error("Hubo un error al obtener los clientes", error);
@@ -79,7 +79,7 @@ function NewContract() {
         };
 
         try {
-            await axios.post('http://127.0.0.1:5000/contracts', NewContract);
+            await api.post('http://127.0.0.1:5000/contracts', NewContract);
             alert('Contrato reado con éxito.');
             navigate('/ContractList')
         } catch (error){

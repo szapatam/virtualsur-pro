@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../../../api';
 
 function InventoryList() {
 
@@ -31,7 +31,7 @@ function InventoryList() {
   
   const fetchEquipos = async () => {
     try {
-        const response = await axios.get('http://127.0.0.1:5000/equipment');
+        const response = await api.get('http://127.0.0.1:5000/equipment');
         setEquipos(response.data);
         setLoading(false);
     } catch (error) {
@@ -49,7 +49,7 @@ function InventoryList() {
      //Eliminar Equipamiento
   const handleDeleteEquipment = (equipmentId) => {
     //solicitud DELETE al backend
-    axios.delete(`http://127.0.0.1:5000/equipment/${equipmentId}`)
+    api.delete(`http://127.0.0.1:5000/equipment/${equipmentId}`)
     .then(response => {
       //Eliminar equipamiento del estado para actualizar la lista
       setEquipos(equipos.filter(equipo => equipo.equipment_id !== equipmentId));

@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from "react";
 import './ContractDetail.css';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from "../../../../api";
 
 function ContractDetail() {
     const navigate = useNavigate();
@@ -28,7 +28,7 @@ function ContractDetail() {
     useEffect(() => {
         const fetchContractDocuments = async () => {
             try {
-                const response = await axios.get(`http://127.0.0.1:5000/contracts/${contractId}/documents`);
+                const response = await api.get(`http://127.0.0.1:5000/contracts/${contractId}/documents`);
                 setContractDocuments(response.data);
             } catch (error) {
                 console.error("Error al obtener los documentos del contrato:", error);
@@ -45,7 +45,7 @@ function ContractDetail() {
     useEffect(() => {
         const fetchContractPersonal = async () => {
             try {
-                const response = await axios.get(`http://127.0.0.1:5000/contracts/${contractId}/personal`);
+                const response = await api.get(`http://127.0.0.1:5000/contracts/${contractId}/personal`);
                 console.log("Datos del personal asignado", response.data);
                 setContractPersonal(response.data || []);
             } catch (error) {
@@ -58,7 +58,7 @@ function ContractDetail() {
 
     const openPersonalModal = async () => {
         try {
-            const response = await axios.get("http://127.0.0.1:5000/personal/available");
+            const response = await api.get("http://127.0.0.1:5000/personal/available");
             setAvailablePersonal(response.data);
             setIsPersonalModalOpen(true);
         } catch (error) {
@@ -69,7 +69,7 @@ function ContractDetail() {
 
     const handleAssignPersonnel = async (staffId) => {
         try {
-            const response = await axios.post(`http://127.0.0.1:5000/contracts/${contractId}/assign_personal`, {
+            const response = await api.post(`http://127.0.0.1:5000/contracts/${contractId}/assign_personal`, {
                 contract_id: contractId,
                 staff_id: staffId,
             });
@@ -87,7 +87,7 @@ function ContractDetail() {
 
     const handleRemovePersonal = async (staffId) => {
         try {
-            await axios.delete(`http://127.0.0.1:5000/contracts/${contractId}/remove_personal/${staffId}`);
+            await api.delete(`http://127.0.0.1:5000/contracts/${contractId}/remove_personal/${staffId}`);
 
             // Mover el personal de asignados a disponibles
             const removedPersonal = contractPersonal.find((person) => person.staff_id === staffId);
@@ -109,7 +109,7 @@ function ContractDetail() {
     // Abrir y cerrar el modal
     const openModal = async () => {
         try {
-            const response = await axios.get('http://127.0.0.1:5000/equipment/available');
+            const response = await api.get('http://127.0.0.1:5000/equipment/available');
             const filteredEquipments = response.data.filter(
                 (equipment) => equipment.available_count > 0
             );
@@ -126,7 +126,7 @@ function ContractDetail() {
     useEffect(() => {
         const fetchAvailableEquipments = async () => {
             try {
-                const response = await axios.get("http://127.0.0.1:5000/equipment/available");
+                const response = await api.get("http://127.0.0.1:5000/equipment/available");
                 console.log("Response from backend:", response.data);
                 setAvailableEquipments(response.data);
             } catch (error) {
@@ -203,7 +203,7 @@ function ContractDetail() {
         //función para obtener detalle del contrato
         const fetchContractDetails = async () => {
             try {
-                const response = await axios.get(`http://127.0.0.1:5000/contracts/${contractId}`)
+                const response = await api.get(`http://127.0.0.1:5000/contracts/${contractId}`)
                 setContract(response.data);
 
                 //Actualizar los equipos asignados
@@ -226,7 +226,7 @@ function ContractDetail() {
         //Función para obtener los clientes para el dropdown
         const fetchClients = async () => {
             try {
-                const response = await axios.get('http://127.0.0.1:5000/clientes');
+                const response = await api.get('http://127.0.0.1:5000/clientes');
                 setClients(response.data);
             } catch (error) {
                 console.error("Error al obtener los clientes", error);
@@ -261,7 +261,7 @@ function ContractDetail() {
                 removed_equipments: removedEquipments, // Equipos eliminados
                 personal: contractPersonal, // Incluir Personal asignado
             };
-            await axios.put(`http://127.0.0.1:5000/contracts/${contract.contract_id}`, payload);
+            await api.put(`http://127.0.0.1:5000/contracts/${contract.contract_id}`, payload);
             alert('Contrato actualizado con éxito.');
             navigate('/ContractList'); // Navegar de vuelta a la lista de contratos después de guardar los cambios
         } catch (error) {
@@ -274,7 +274,7 @@ function ContractDetail() {
     const handleRemoveEquipment = async (equipmentId) => {
         try {
             // Llama al backend para actualizar el estado del equipo
-            await axios.delete(`http://127.0.0.1:5000/contracts/${contract.contract_id}/remove_equipment/${equipmentId}`);
+            await api.delete(`http://127.0.0.1:5000/contracts/${contract.contract_id}/remove_equipment/${equipmentId}`);
 
             // Actualiza el estado local para eliminar el equipo
             setContractEquipments((prevEquipments) =>
@@ -288,7 +288,7 @@ function ContractDetail() {
 
     const handleDownloadDocument = async (documentId) => {
         try {
-            const response = await axios.get(`http://127.0.0.1:5000/documents/${documentId}`, {
+            const response = await api.get(`http://127.0.0.1:5000/documents/${documentId}`, {
                 responseType: 'blob',
             });
             const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -306,14 +306,14 @@ function ContractDetail() {
 
     const handleGenerateCotizacion = async () => {
         try {
-            const response = await axios.post(
+            const response = await api.post(
                 `http://127.0.0.1:5000/contracts/${contractId}/generate_cotizacion`
             );
 
             alert(response.data.message);
 
             // Refrescar el listado de documentos
-            const updatedDocuments = await axios.get(
+            const updatedDocuments = await api.get(
                 `http://127.0.0.1:5000/contracts/${contractId}/documents`
             );
             setContractDocuments(updatedDocuments.data);
@@ -327,7 +327,7 @@ function ContractDetail() {
         if (!window.confirm("¿Estás seguro de que deseas eliminar este documento?")) return;
 
         try {
-            await axios.delete(`http://127.0.0.1:5000/documents/${documentId}`);
+            await api.delete(`http://127.0.0.1:5000/documents/${documentId}`);
             alert("Documento eliminado con éxito.");
 
             // Actualiza la lista de documentos
@@ -342,14 +342,14 @@ function ContractDetail() {
 
     const handleGenerateGuide = async () => {
         try {
-            const response = await axios.post(
+            const response = await api.post(
                 `http://127.0.0.1:5000/contracts/${contractId}/generate_guia_despacho`
             );
 
             alert(response.data.message);
 
             // Refrescar el listado de documentos
-            const updatedDocuments = await axios.get(
+            const updatedDocuments = await api.get(
                 `http://127.0.0.1:5000/contracts/${contractId}/documents`
             );
             setContractDocuments(updatedDocuments.data);
@@ -385,7 +385,7 @@ function ContractDetail() {
                 }
 
                 // Hacer POST al backend
-                const response = await axios.post('http://127.0.0.1:5000/equipment/reserve', dataToReserve);
+                const response = await api.post('http://127.0.0.1:5000/equipment/reserve', dataToReserve);
 
 
                 // Actualizar la lista de equipos asignados en el estado principal

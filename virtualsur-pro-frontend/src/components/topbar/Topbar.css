@@ -58,10 +58,23 @@ text-decoration: none;
   padding: 10px 0;
   margin-right: 10px;
   font-size: 1.5em;
+  margin-left: 20px;
 }
 .topbar-right span {
   margin-right: 10px;
   font-size: 1em;
   padding: 10px 0;
   border-left: 5px solid #ff4040;
+}
+
+
+.logout-text {
+  cursor: pointer; /* Cambia el cursor a una mano */
+  color: #ffffff; /* Blanco */
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.logout-text:hover {
+  color: #f05454; /* Cambia el color al pasar el mouse */
 }

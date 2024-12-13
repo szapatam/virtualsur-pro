@@ -2,9 +2,18 @@ import React from 'react';
 import './Topbar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faBell, faUserCircle } from '@fortawesome/free-solid-svg-icons';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Topbar( {onMenuClick} ) {
+  const navigate = useNavigate(); // Hook para redirigir
+
+  // Función para cerrar sesión
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Eliminamos el token del almacenamiento local
+    alert('Sesión cerrada');
+    navigate('/login'); // Redirigimos al login
+  };
+
   return (
     <div className="topbar">
       <div className="topbar-left">
@@ -14,8 +23,7 @@ function Topbar( {onMenuClick} ) {
         </Link>
       </div>
       <div className="topbar-right">
-        <FontAwesomeIcon icon={faBell} className="topbar-notification-icon" />
-          <span>Bienvenido!</span>
+        <p onClick={handleLogout} className='logout-text'>Cerrar Sesión</p>
           <FontAwesomeIcon icon={faUserCircle} className="topbar-user-icon" />
       </div> 
     </div>

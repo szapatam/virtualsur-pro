@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './EquipmentDetail.css';
-import { useNavigate, useParams, useViewTransitionState } from 'react-router-dom';
-import axios from 'axios';
+import { useNavigate, useParams } from 'react-router-dom';
+import api from '../../../../api';
 
 function EquipmentDetail() {
   const { equipmentId } = useParams(); // Obtener el id del equipo desde los parámetros de la URL
@@ -21,7 +21,7 @@ function EquipmentDetail() {
   useEffect(() =>{
     const fetchInitialData = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:5000/equipment/${equipmentId}`);
+        const response = await api.get(`http://127.0.0.1:5000/equipment/${equipmentId}`);
         const data = response.data;
 
         // Rellenan los estados con los datos
@@ -35,11 +35,11 @@ function EquipmentDetail() {
         setSubcategoryId(data.subcategory_id);
 
         //Solicitar categoria
-        const categoriesResponse = await axios.get('http://127.0.0.1:5000/category')
+        const categoriesResponse = await api.get('http://127.0.0.1:5000/category')
         setCategories(categoriesResponse.data);
 
             // Solicitar las subcategorías
-            const subcategoriesResponse = await axios.get('http://127.0.0.1:5000/subcategory');
+            const subcategoriesResponse = await api.get('http://127.0.0.1:5000/subcategory');
             setSubCategories(subcategoriesResponse.data);
       }catch (error){
         console.error("hubo un error al obtener los detalles del equipamiento", error);
@@ -62,7 +62,7 @@ function EquipmentDetail() {
         };
 
         // Realiza la solicitud PUT al backend con el ID del equipamiento
-        const response = await axios.put(`http://127.0.0.1:5000/equipment/${equipmentId}`, updatedEquipment);
+        const response = await api.put(`http://127.0.0.1:5000/equipment/${equipmentId}`, updatedEquipment);
 
         alert('Equipamiento actualizado con éxito.');
         navigate('/InventoryList');  // Navegar de vuelta a la lista de inventario

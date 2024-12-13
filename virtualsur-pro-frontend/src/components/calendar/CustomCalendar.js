@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './CustomCalendar.css'
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import api from '../../api';
 
 const ContractCalendar = () => {
   const [events, setEvents] = useState([]);
@@ -13,7 +13,7 @@ const ContractCalendar = () => {
 
   const fetchEvents = async (month, year) => {
     try {
-      const response = await axios.get('http://127.0.0.1:5000/contracts/events', {
+      const response = await api.get('http://127.0.0.1:5000/contracts/events', {
         params: { month, year },
       });
       let events = response.data;

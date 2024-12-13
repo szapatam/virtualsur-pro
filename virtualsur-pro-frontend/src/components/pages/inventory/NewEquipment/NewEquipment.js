@@ -1,7 +1,7 @@
 import React, { useState, useEffect} from 'react';
 import './NewEquipment.css';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../../../api';
 
 function NewEquipment() {
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ function NewEquipment() {
   // Cargar categorías y subcategorías al cargar el componente
   useEffect(() => {
     const fetchCategories = async () => {
-        const response = await axios.get('http://127.0.0.1:5000/category');
+        const response = await api.get('http://127.0.0.1:5000/category');
         setCategories(response.data);
     };
     fetchCategories();
@@ -60,7 +60,7 @@ const handleCategoryChange = async (e) => {
   const categoryId = e.target.value;
   setSelectedCategory(categoryId);
 
-  const response = await axios.get(`http://127.0.0.1:5000/subcategory/${categoryId}`);
+  const response = await api.get(`http://127.0.0.1:5000/subcategory/${categoryId}`);
   setSubcategories(response.data);
 };
 
@@ -83,7 +83,7 @@ const handleSubmit = async (e) => {
           equipment_name: equipment_name
       };
 
-      const response = await axios.post('http://127.0.0.1:5000/equipment', nuevoEquipo);
+      const response = await api.post('http://127.0.0.1:5000/equipment', nuevoEquipo);
       setMensaje(response.data.message);
       alert('Se ha creado el Equipamiento con exito.')
       // Limpiar el formulario

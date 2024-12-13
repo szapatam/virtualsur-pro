@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './NewReport.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
-import axios from 'axios';
+import api from '../../../../api';
 
 function NewReport() {
 
@@ -17,7 +15,7 @@ function NewReport() {
       // Obtener clientes para el select
       const fetchClients = async () => {
           try {
-              const response = await axios.get('http://127.0.0.1:5000/clientes');
+              const response = await api.get('http://127.0.0.1:5000/clientes');
               setClients(response.data);
           } catch (error) {
               console.error("Error al cargar clientes:", error);
@@ -35,7 +33,7 @@ function NewReport() {
               client_id: clientId || undefined,
           };
 
-          const response = await axios.get('http://127.0.0.1:5000/contracts/filter', {
+          const response = await api.get('http://127.0.0.1:5000/contracts/filter', {
               params: filters,
           });
 
@@ -57,7 +55,7 @@ function NewReport() {
               client_id: clientId || undefined,
           };
 
-          const response = await axios.post('http://127.0.0.1:5000/contracts/filter/report', filters, {
+          const response = await api.post('http://127.0.0.1:5000/contracts/filter/report', filters, {
               responseType: 'blob', // Para manejar el PDF directamente
           });
 
