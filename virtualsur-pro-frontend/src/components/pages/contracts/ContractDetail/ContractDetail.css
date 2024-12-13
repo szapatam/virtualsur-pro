@@ -1,42 +1,41 @@
-.form-detail-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
-    gap: 20px 10px;
-    grid-auto-flow: row;
-    grid-template-areas:
-        "contract contract contract"
-        "contract contract contract"
-        "inventory personal docs";
-}
-
-.contract {
-    grid-area: contract;
-}
-
-.inventory {
-    grid-area: inventory;
-}
-
-.personal {
-    grid-area: personal;
-}
-
-.docs {
-    grid-area: docs;
-}
-
-.form-detail-row {
+/* Contenedor Principal */
+.pagina {
     display: flex;
-    flex-wrap: wrap;
-    margin-bottom: 15px;
-    gap: 20px;
+    flex-direction: column;
+    gap: 20px; /* Espaciado entre secciones */
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
-.form-detail-group {
-    flex: 1;
-    min-width: 200px;
+/* Sección fija */
+.seccion.fija {
+    border-radius: 10px;
+    padding: 20px;
+    overflow: hidden; /* Previene desbordamiento si el contenido excede */
 }
+
+/* Secciones dinámicas */
+.seccion.dinamica, .subseccion.dinamica {
+    min-height: 100px; /* Altura mínima */
+    padding: 20px;
+    border-radius: 10px;
+    overflow: auto; /* Añade scroll si hay mucho contenido */
+}
+
+/* Fila para subsecciones */
+.fila {
+    display: flex;
+    gap: 20px; /* Espaciado entre subsecciones */
+}
+
+/* Subsecciones (3 y 4) */
+.subseccion {
+    flex: 1; /* Ocupan espacio igual dentro de la fila */
+}
+
 
 .form-detail-group label {
     display: block;

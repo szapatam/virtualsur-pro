@@ -1,0 +1,37 @@
+/* Contenedor Principal */
+.pagina {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Espaciado entre secciones */
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Sección fija */
+.seccion.fija {
+    border-radius: 10px;
+    padding: 20px;
+    overflow: hidden; /* Previene desbordamiento si el contenido excede */
+}
+
+/* Secciones dinámicas */
+.seccion.dinamica, .subseccion.dinamica {
+    min-height: 100px; /* Altura mínima */
+    padding: 20px;
+    border-radius: 10px;
+    overflow: auto; /* Añade scroll si hay mucho contenido */
+}
+
+/* Fila para subsecciones */
+.fila {
+    display: flex;
+    gap: 20px; /* Espaciado entre subsecciones */
+}
+
+/* Subsecciones (3 y 4) */
+.subseccion {
+    flex: 1; /* Ocupan espacio igual dentro de la fila */
+}

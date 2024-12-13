@@ -19,7 +19,6 @@ import ContractList from './components/pages/contracts/ContractList/ContractList
 import ContractCreate from './components/pages/contracts/ContractCreate/ContractCreate';
 import ContractDetail from './components/pages/contracts/ContractDetail/ContractDetail';
 import Login from './components/login/Login';
-
 //ESTE COMENTARIO SERA UNA PRUEBA PARA FORK GIT
 function App() {
   return (
@@ -43,7 +42,7 @@ function App() {
         <Route path='/contract/:contractId' element={<ContractDetail />} />
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-      </Routes> 
+    </Routes> 
     </Layout>
   );
 }

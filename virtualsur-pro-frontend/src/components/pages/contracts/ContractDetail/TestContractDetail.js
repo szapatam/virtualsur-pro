@@ -1,9 +1,9 @@
 import React, {useState, useEffect} from "react";
-import './ContractDetail.css';
+import './TestContractDetail.css';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
-function ContractDetail() {
+function TestContractDetail() {
     const navigate = useNavigate();
     const { contractId } = useParams(); // Obtener ID por URL
 
@@ -711,4 +711,4 @@ function ContractDetail() {
     );
 }
 
-export default ContractDetail;
+export default TestContractDetail;
