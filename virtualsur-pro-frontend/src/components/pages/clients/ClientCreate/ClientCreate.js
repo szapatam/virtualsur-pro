@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import './ClientCreate.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import api from '../../../../api';
 
 function ClientCreate() {
 
@@ -73,7 +74,7 @@ function ClientCreate() {
             console.log(nuevoCliente); // Log para verificar los datos antes de enviar
 
             // Solicitud POST al backend para agregar un nuevo cliente
-            const response = await axios.post('http://127.0.0.1:5000/clientes', nuevoCliente);
+            const response = await api.post('http://127.0.0.1:5000/clientes', nuevoCliente);
 
             // Mostrar mensaje si el cliente se agregó correctamente
             setMensaje(response.data.mensaje);

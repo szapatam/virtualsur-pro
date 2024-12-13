@@ -1,4 +1,5 @@
 from app import create_app, db
+from app.models import *  # Importar todos los modelos
 
 app = create_app()
 

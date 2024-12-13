@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import api from '../../../../api';
 
 
 
@@ -31,7 +32,7 @@ function ClientList() {
   // Función para obtener los clientes del backend
   const fetchClients = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:5000/clientes');
+      const response = await api.get('http://127.0.0.1:5000/clientes');
       setClients(response.data);
       setLoading(false);
     } catch (err) {
@@ -48,7 +49,7 @@ function ClientList() {
   //Eliminar clientes
   const handleDeleteClient = (clientId) => {
     //solicitud DELETE al backend
-    axios.delete(`http://127.0.0.1:5000/clientes/${clientId}`)
+    api.delete(`http://127.0.0.1:5000/clientes/${clientId}`)
     .then(response => {
       //Eliminar cliente del estado para actualizar la lista
       setClients(clients.filter(client => client.client_id !== clientId));

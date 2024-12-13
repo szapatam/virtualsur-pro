@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import './ClientDetail.css';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../../../api';
 
 function ClientDetail() {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ function ClientDetail() {
   useEffect(() => {
     const fetchClientDetails = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:5000/clientes/${clientId}`);
+        const response = await api.get(`http://127.0.0.1:5000/clientes/${clientId}`);
         setClient(response.data);
         setLoading(false);
       } catch (err) {
@@ -34,7 +34,7 @@ function ClientDetail() {
   // Función para guardar los cambios en el cliente
   const handleSaveChanges = async () => {
     try {
-      await axios.put(`http://127.0.0.1:5000/clientes/${clientId}`, client);
+      await api.put(`http://127.0.0.1:5000/clientes/${clientId}`, client);
       alert('Cliente actualizado correctamente');
       navigate('/clientes');
     } catch (err) {

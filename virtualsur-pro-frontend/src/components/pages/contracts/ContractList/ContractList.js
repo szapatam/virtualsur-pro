@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import './ContractList.css';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../../../api';
 
 function ContractList() {
     const navigate = useNavigate();
@@ -20,7 +20,7 @@ function ContractList() {
     useEffect(() => {
         const fetchContracts = async () => {
             try {
-                const response = await axios.get('http://127.0.0.1:5000/contracts');
+                const response = await api.get('http://127.0.0.1:5000/contracts');
                 setContracts(response.data);
                 setLoading(false);
             } catch (error) {
@@ -38,7 +38,7 @@ function ContractList() {
         }
 
         try {
-            await axios.delete(`http://127.0.0.1:5000/contracts/${contractId}`);
+            await api.delete(`http://127.0.0.1:5000/contracts/${contractId}`);
             alert('Contrato eliminado con éxito.');
 
             // Actualizar la lista de contratos después de la eliminación
