@@ -341,7 +341,8 @@ def get_contract_events():
             Contract.contract_code,
             Contract.event_execution_date,
             Contract.event_name,
-            Contract.contract_id
+            Contract.contract_id,
+            Contract.status
         )
 
         # Aplicar filtros opcionales
@@ -362,7 +363,8 @@ def get_contract_events():
                 "contract_code": event.contract_code,
                 "event_execution_date": event.event_execution_date.strftime('%Y-%m-%d'),
                 "event_name": event.event_name,
-                "contract_id": event.contract_id
+                "contract_id": event.contract_id,
+                "status": event.status
             }
             for event in events
         ]

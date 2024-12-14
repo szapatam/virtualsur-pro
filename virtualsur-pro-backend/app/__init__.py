@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+from datetime import timedelta
 
 # instancia de SQLAlchemy
 db = SQLAlchemy()
@@ -18,6 +19,8 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:admin@localhost/virtualsurpro'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'clave123'
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)  # Token expira en 30 segundos    
+    
 
     db.init_app(app)
     bcrypt.init_app(app)
@@ -42,6 +45,9 @@ def create_app():
     from app.routes.personal_routes import personal_bp
     app.register_blueprint(personal_bp)
     
+    @jwt.expired_token_loader
+    def expired_token_callback(jwt_header, jwt_payload):
+        return jsonify({"error": "Token expirado"}), 401
     
 
     @jwt.invalid_token_loader

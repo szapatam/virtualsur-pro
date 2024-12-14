@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from datetime import timedelta
 from app.models import User
 from app import db
@@ -51,8 +51,14 @@ def login():
     # Generar un token JWT para el usuario
     identity = str(user.id)
     access_token = create_access_token(
-        identity= identity,
-        expires_delta=timedelta(hours=1)  # Token expira en 1 hora
+        identity= identity
     )
 
     return jsonify({"access_token": access_token}), 200
+
+@auth_bp.route('/refresh', methods=['POST'])
+@jwt_required()  # El usuario debe estar autenticado
+def refresh_token():
+    identity = get_jwt_identity()  # Obtener el ID del usuario autenticado
+    new_access_token = create_access_token(identity=identity)  # Generar un nuevo token
+    return jsonify({"access_token": new_access_token}), 200

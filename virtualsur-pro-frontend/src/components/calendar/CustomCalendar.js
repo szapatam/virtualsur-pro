@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
+import 'react-calendar/dist/Calendar.css'
 import './CustomCalendar.css'
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
@@ -84,6 +84,7 @@ const ContractCalendar = () => {
                 <th>Código</th>
                 <th>Evento</th>
                 <th>Fecha</th>
+                <th>Estado</th>
                 <th>Acción</th>
               </tr>
             </thead>
@@ -99,11 +100,12 @@ const ContractCalendar = () => {
                     )
                   ).toLocaleDateString()}
                   </td>
+                  <td>{event.status}</td>
                   <td>
                   <button onClick={() => navigate(`/contract/${event.contract_id}`)} className="action-button edit">
                     Ver/Editar
                   </button>
-                  </td>
+                  </td>   
                 </tr>
               ))}
             </tbody>
