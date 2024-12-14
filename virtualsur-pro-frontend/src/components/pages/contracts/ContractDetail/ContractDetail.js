@@ -24,6 +24,8 @@ function ContractDetail() {
     const [assignedPersonnel, setAssignedPersonnel] = useState([]);
     const [contractDocuments, setContractDocuments] = useState([]);
 
+    console.log("Estado del contrato:", contract.status);
+
     //sección documentos
     useEffect(() => {
         const fetchContractDocuments = async () => {
@@ -66,6 +68,27 @@ function ContractDetail() {
             alert("Hubo un error al cargar el personal disponible.");
         }
     };
+
+
+    const finalizeContract = async (contractId) => {
+        const userConfirmed = window.confirm(
+            "¿Está seguro de finalizar este contrato? esta acción no se puede deshacer."            
+        );
+
+        if (!userConfirmed){
+            return;
+        }
+        try {
+          const response = await api.post(`/contracts/${contractId}/finalize`);
+          console.log('Contrato finalizado:', response.data);
+          alert('Contrato Finalizado')
+          navigate('/ContractList')
+          // Realiza alguna acción posterior si es necesario
+        } catch (error) {
+          console.error('Error finalizando contrato:', error.response?.data || error.message);
+        }
+      };  
+
 
     const handleAssignPersonnel = async (staffId) => {
         try {
@@ -257,9 +280,9 @@ function ContractDetail() {
         try {
             const payload = {
                 ...contract,
-                equipments: contractEquipments, // Incluye equipos asignados
+                equipments: contract.status === 'Finalizado' ? [] : contractEquipments, // Incluye equipos asignados
                 removed_equipments: removedEquipments, // Equipos eliminados
-                personal: contractPersonal, // Incluir Personal asignado
+                personal: contract.status === 'Finalizado' ? [] :  contractPersonal, // Incluir Personal asignado
             };
             await api.put(`http://127.0.0.1:5000/contracts/${contract.contract_id}`, payload);
             alert('Contrato actualizado con éxito.');
@@ -358,6 +381,7 @@ function ContractDetail() {
             alert("Hubo un error al generar la cotización.");
         }
     };
+ 
 
 
 
@@ -491,14 +515,20 @@ function ContractDetail() {
 
     return (
     <div className="pagina">
-        <h1>Detalle de Contrato</h1>
+        <div className="detail-contract-header">
+            <h1>Detalle de Contrato</h1>
+            <div className="detail-contract-button">
+            <button className="detail-contract-header" onClick={() => navigate('/ContractList')}>Volver al Listado</button>
+            <button className="detail-contract-header" onClick={() => finalizeContract(contract.contract_id)} disabled={contract.status === 'Finalizado'}>Finalizar Contrato</button>
+            </div>
+        </div>
         <div className="seccion fija" id="seccion1">
         <form onSubmit={handleUpdateSubmit}>
                         <fieldset>
                             <div className='form-detail-row'>
                                 <div className='form-detail-group'>
                                     <label>Ingresar Cliente: </label>
-                                    <select value={contract.client_id || ''} onChange={(e) => setContract({ ...contract, client_id: e.target.value })}>
+                                    <select value={contract.client_id || ''} onChange={(e) => setContract({ ...contract, client_id: e.target.value })} disabled={contract.status === 'Finalizado'}>
                                         <option value="">Seleccione un cliente</option>
                                         {clients.map((client) => (
                                             <option key={client.client_id} value={client.client_id}>
@@ -507,31 +537,31 @@ function ContractDetail() {
                                         ))}
                                     </select>
                                     <label>Nombre del evento: </label>
-                                    <input type='text' value={contract.event_name} onChange={(e) => setContract({ ...contract, event_name: e.target.value })} />
+                                    <input type='text' value={contract.event_name} onChange={(e) => setContract({ ...contract, event_name: e.target.value })} disabled={contract.status === 'Finalizado'}/>
                                 </div>
                             </div>
                             <div className='form-detail-row'>
                                 <div className='form-detail-group'>
                                     <label>Fecha Inicio contrato: </label>
-                                    <input type='date' value={contract.contract_start_date} onChange={(e) => setContract({ ...contract, contract_start_date: e.target.value })} />
+                                    <input type='date' value={contract.contract_start_date} onChange={(e) => setContract({ ...contract, contract_start_date: e.target.value })} disabled={contract.status === 'Finalizado'} />
                                     <label>Fecha Ejec. evento: </label>
-                                    <input type='date' value={contract.event_execution_date} onChange={(e) => setContract({ ...contract, event_execution_date: e.target.value })} />
+                                    <input type='date' value={contract.event_execution_date} onChange={(e) => setContract({ ...contract, event_execution_date: e.target.value })} disabled={contract.status === 'Finalizado'} />
                                 </div>
                             </div>
                             <div className='form-detail-row'>
                                 <div className='form-detail-group'>
                                     <label>Lugar del evento: </label>
-                                    <input type='text' value={contract.event_location} onChange={(e) => setContract({ ...contract, event_location: e.target.value })} />
+                                    <input type='text' value={contract.event_location} onChange={(e) => setContract({ ...contract, event_location: e.target.value })} disabled={contract.status === 'Finalizado'} />
                                     <label>Metros cuadrados: </label>
-                                    <input type='number' value={contract.square_meters} onChange={(e) => setContract({ ...contract, square_meters: e.target.value })} />
+                                    <input type='number' value={contract.square_meters} onChange={(e) => setContract({ ...contract, square_meters: e.target.value })} disabled={contract.status === 'Finalizado'} />
                                 </div>
                             </div>
                             <div className='form-detail-row'>
                                 <div className='form-detail-group'>
                                     <label>Valor metro cuadrado: </label>
-                                    <input type='number' value={contract.square_meter_value} onChange={(e) => setContract({ ...contract, square_meter_value: e.target.value })} />
+                                    <input type='number' value={contract.square_meter_value} onChange={(e) => setContract({ ...contract, square_meter_value: e.target.value })} disabled={contract.status === 'Finalizado'} />
                                     <label>Costo Adicional: </label>
-                                    <input type='number' value={contract.additional_cost} onChange={(e) => setContract({ ...contract, additional_cost: e.target.value })} />
+                                    <input type='number' value={contract.additional_cost} onChange={(e) => setContract({ ...contract, additional_cost: e.target.value })} disabled={contract.status === 'Finalizado'} />
                                 </div>
                             </div>
                             <div className='form-detail-row'>
@@ -542,7 +572,7 @@ function ContractDetail() {
                             </div>
                         </fieldset>
                         <div className='save-button-container'>
-                            <button className='submit-button' type='submit'> Guardar Cambios</button>
+                            <button className='submit-button' type='submit' disabled={contract.status === 'Finalizado'}> Guardar Cambios</button>
                         </div>
                     </form>
         </div>
@@ -568,6 +598,7 @@ function ContractDetail() {
                                         <td>
                                             <button
                                                 className="remove-item" onClick={() => handleRemoveEquipment(equipment.equipment_id)}
+                                                disabled={contract.status === 'Finalizado'}
                                             >
                                                 Eliminar
                                             </button>
@@ -577,7 +608,7 @@ function ContractDetail() {
                             </tbody>
                         </table>
                     </fieldset>
-                    <button className="add-iventory-item" onClick={openModal}>
+                    <button className="add-iventory-item" onClick={openModal} disabled={contract.status === 'Finalizado'}>
                         Asignar Equipamiento
                     </button>
                     </div>
@@ -604,6 +635,7 @@ function ContractDetail() {
                                             <button
                                                 className="remove-item"
                                                 onClick={() => handleRemovePersonal(person.staff_id)}
+                                                disabled={contract.status === 'Finalizado'}
                                             >
                                                 Eliminar
                                             </button>
@@ -613,7 +645,7 @@ function ContractDetail() {
                             </tbody>
                         </table>
                     </fieldset>
-                    <button className="add-iventory-item" onClick={openPersonalModal}>
+                    <button className="add-iventory-item" onClick={openPersonalModal} disabled={contract.status === 'Finalizado'}>
                         Asignar Personal
                     </button>
                     </div>
@@ -651,6 +683,7 @@ function ContractDetail() {
                                                         <button
                                                             className="remove-item"
                                                             onClick={() => handleDownloadDocument(doc.id)}
+                                                            disabled={contract.status === 'Finalizado'}
                                                         >
                                                             Descargar
                                                         </button>
@@ -658,6 +691,7 @@ function ContractDetail() {
                                                     <button
                                                         className="remove-item"
                                                         onClick={() => handleDeleteDocument(doc.id)}
+                                                        disabled={contract.status === 'Finalizado'}
                                                     >
                                                         Eliminar
                                                     </button>
@@ -675,8 +709,8 @@ function ContractDetail() {
                         </table>
                     </fieldset>
                     <div className='docs-action-btn'>
-                        <button className='add-iventory-item' onClick={handleGenerateCotizacion}>Crear Cotización</button>
-                        <button className='add-iventory-item' onClick={handleGenerateGuide}>Crear Guía DE/RE</button>   
+                        <button className='add-iventory-item' onClick={handleGenerateCotizacion} disabled={contract.status === 'Finalizado'}>Crear Cotización</button>
+                        <button className='add-iventory-item' onClick={handleGenerateGuide} disabled={contract.status === 'Finalizado'}>Crear Guía DE/RE</button>   
                     </div> 
                     </div>            
             </div>

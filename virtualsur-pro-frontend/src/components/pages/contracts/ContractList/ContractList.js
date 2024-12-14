@@ -94,6 +94,7 @@ function ContractList() {
                             <th>Lugar del Evento</th>
                             <th>Metros Cuadrados</th>
                             <th>Costo Total</th>
+                            <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -108,6 +109,7 @@ function ContractList() {
                                 <td>{contract.event_location}</td>
                                 <td>{contract.square_meters}</td>
                                 <td>{contract.total_cost}</td>
+                                <td>{contract.status}</td>
                                 <td>
                                     <button onClick={() => navigate(`/contract/${contract.contract_id}`)} className="action-button edit">
                                         <FontAwesomeIcon icon={faEdit} /> Ver/Editar

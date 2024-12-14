@@ -29,6 +29,7 @@ def create_contract():
         square_meters = float(data['square_meters'])  # Convertir a float
         square_meter_value = float(data['square_meter_value'])  # Convertir a float
         additional_cost = float(data.get('additional_cost', 0))  # Convertir a float
+        status = data.get('status')
 
         # Calcular el costo total
         total_cost = (square_meters * square_meter_value) + additional_cost
@@ -44,7 +45,8 @@ def create_contract():
             square_meters=square_meters,
             square_meter_value=square_meter_value,
             additional_cost=additional_cost,
-            total_cost=total_cost
+            total_cost=total_cost,
+            status=status
         )
 
         # Agregar el nuevo contrato a la sesión de base de datos
@@ -78,7 +80,8 @@ def get_contracts():
             "event_location": c.event_location,
             "square_meters": c.square_meters,
             "square_meter_value": c.square_meter_value,
-            "total_cost": c.total_cost
+            "total_cost": c.total_cost,
+            "status": c.status
         }
         for c in contracts
     ]
@@ -100,7 +103,8 @@ def get_contract_details(contract_id):
             Contract.square_meters,
             Contract.square_meter_value,
             Contract.additional_cost,
-            Contract.total_cost
+            Contract.total_cost,
+            Contract.status
         ).filter(Contract.contract_id == contract_id).first()
 
         if not contract:
@@ -146,6 +150,7 @@ def get_contract_details(contract_id):
             "square_meter_value": contract.square_meter_value,
             "additional_cost": contract.additional_cost,
             "total_cost": contract.total_cost,
+            "status": contract.status,
             "equipments": equipment_list,  # Incluir equipos asignados
             'personnel_list': personnel_list # Agregar el personal asignado
 
@@ -169,6 +174,10 @@ def update_contract(contract_id):
 
         if not contract:
             return jsonify({"message": "Contrato no encontrado"}), 404
+        
+        if contract.status == 'Finalizado':
+            return jsonify({"error": "No se pueden modificar recursos de un contrato finalizado"}), 400
+        
 
         # Actualizar los datos del contrato
         contract.client_id = data.get('client_id', contract.client_id)
@@ -185,9 +194,13 @@ def update_contract(contract_id):
             float(contract.square_meters) * float(contract.square_meter_value)
         ) + float(contract.additional_cost)
 
-        # Manejar equipos asignados
-        equipments = data.get('equipments', [])
-        removed_equipments = data.get('removed_equipments', [])
+        equipments = []
+        removed_equipments = []
+
+        # Manejar equipos asignados SOLO SI EL CONTRATO NO ESTA FINALIZADO
+        if contract.status != 'Finalizado':
+            equipments = data.get('equipments', [])
+            removed_equipments = data.get('removed_equipments', [])
 
         # Eliminar equipos removidos
         if removed_equipments:
@@ -786,3 +799,54 @@ def get_documents(contract_id):
     except Exception as e:
         print(f"Error fetching documents: {str(e)}")
         return jsonify({"error": "No se pudo obtener los documentos"}), 500
+    
+#finalizar un contrato    
+@contract_bp.route('/contracts/<int:contract_id>/finalize', methods=['POST'])
+@jwt_required()
+def finalize_contract(contract_id):
+    try:
+        # Buscar contrato por ID
+        contract = Contract.query.get(contract_id)
+        if not contract:
+            return jsonify({"error": "Contrato no encontrado"}), 404
+
+        # Validar que el contrato no esté ya finalizado
+        if contract.status == 'Finalizado':
+            return jsonify({"error": "El contrato ya está finalizado"}), 400
+
+        # Actualizar estado del contrato
+        contract.status = 'Finalizado'
+
+        # Liberar equipos asignados al contrato
+        assigned_equipments = ContractEquipment.query.filter_by(contract_id=contract_id).all()
+        for item in assigned_equipments:
+            equipment = Equipment.query.get(item.equipment_id)
+            if equipment:
+                equipment.status_equipment = 'Operativo'
+
+        # Liberar personal asignado al contrato
+        assigned_personnel = ContractPersonal.query.filter_by(contract_id=contract_id).all()
+        if assigned_personnel:
+            print("Personal asignado al contrato:", assigned_personnel)  # Depuración
+            for item in assigned_personnel:
+                personal = Personal.query.get(item.staff_id)
+                if personal:
+                    print(f"Liberando personal: {personal.staff_id} - {personal.staff_name}")  # Depuración
+                    personal.status = 'Disponible'
+                    db.session.add(personal)  # Asegurarse de añadir a la sesión
+                    print(f"Estado despues de cambiar {personal.status}")
+        else:
+            print("No se encontró personal asignado para este contrato.")
+
+        try:
+            db.session.commit()
+            print("Cambios guardados en la base de datos correctamente.")
+            # Verificar en una nueva consulta tras el commit
+        except Exception as e:
+            db.session.rollback()
+            print("Error al guardar cambios en la base de datos:", str(e))
+
+        return jsonify({"message": "Contrato finalizado y recursos liberados correctamente"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500

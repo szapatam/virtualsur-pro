@@ -14,6 +14,7 @@ class Contract(db.Model):
     square_meter_value = db.Column(db.Float, nullable=False)
     additional_cost = db.Column(db.Float, nullable=True, default=0)
     total_cost = db.Column(db.Float, nullable=False)
+    status = db.Column(db.Enum('En curso', 'Finalizado'), nullable=False, default='En curso')
 
     # Relación con la tabla Client
     client = db.relationship('Cliente', back_populates='contracts')
