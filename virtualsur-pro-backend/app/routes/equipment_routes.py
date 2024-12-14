@@ -37,6 +37,39 @@ def obtener_equipos():
     # Retornar como JSON
     return jsonify(result)
 
+@equipment_bp.route('/equipment/grouped', methods=['GET'])
+@jwt_required()
+def obtener_equipos_agrupados():
+    # Consulta con join para obtener subcategorías y categorías
+    equipos = Equipment.query \
+        .join(Subcategory, Equipment.subcategory_id == Subcategory.subcategory_id) \
+        .join(Category, Subcategory.category_id == Category.category_id) \
+        .add_columns(
+            Equipment.equipment_id,
+            Equipment.tech_code,
+            Equipment.status_equipment,
+            Equipment.equipment_name,
+            Subcategory.subcategory_name,
+            Category.category_name
+        ).all()
+
+    # Agrupar los equipos por subcategoría
+    grouped_data = {}
+    for equipo in equipos:
+        subcategory_name = equipo.subcategory_name
+        if subcategory_name not in grouped_data:
+            grouped_data[subcategory_name] = []
+        grouped_data[subcategory_name].append({
+            "equipment_id": equipo.equipment_id,
+            "tech_code": equipo.tech_code,
+            "status_equipment": equipo.status_equipment,
+            "equipment_name": equipo.equipment_name,
+            "category_name": equipo.category_name
+        })
+
+    # Convertir en una lista para enviar al frontend
+    result = [{"subcategory_name": key, "equipments": value} for key, value in grouped_data.items()]
+    return jsonify(result)
 
 # RUTA: Obtener equipo por ID
 @equipment_bp.route('/equipment/<int:equipment_id>', methods=['GET'])

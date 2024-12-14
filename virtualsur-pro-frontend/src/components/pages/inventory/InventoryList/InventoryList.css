@@ -111,4 +111,68 @@
   .action-button:hover {
     opacity: 0.8;
   }
-  
+/* Estilo base para las filas de equipos (colapsadas) */
+.equipment-row {
+  opacity: 0; /* Comienza invisible */
+  transform: translateY(-10px); /* Desplaza ligeramente hacia arriba */
+  max-height: 0; /* Oculta la altura */
+  overflow: hidden; /* Esconde contenido desbordado */
+  transition: opacity 0.3s ease, transform 0.3s ease, max-height 0.3s ease; /* Suaviza la transición */
+}
+
+/* Cuando está expandida */
+.equipment-row.expanded {
+  opacity: 1; /* Se vuelve visible */
+  transform: translateY(0); /* Regresa a su posición original */
+  max-height: 500px; /* Define un valor suficientemente grande */
+}
+
+  .dropdown-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: left;
+}
+
+.dropdown-button svg {
+  margin-right: 10px; /* Espacio entre el icono y el texto */
+  vertical-align: middle; /* Asegura que esté alineado con el texto */
+}
+
+.dropdown-button:hover {
+    text-decoration: underline;
+}
+
+/* Estilo base para el ícono del dropdown */
+.dropdown-button .chevron-icon {
+  transition: transform 0.3s ease; /* Suaviza la transición */
+}
+
+/* Ícono cuando el dropdown está expandido */
+.dropdown-button.expanded .chevron-icon {
+  transform: rotate(360deg); /* Rota el ícono hacia abajo */
+}
+
+.inventory-list-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+/* Estilo para las filas de subcategorías */
+.subcategory-row {
+  background-color: #333; /* Fondo gris claro */
+  font-weight: bold;
+  color: white;
+}
+
+.subcategory-row td {
+  padding: 10px;
+}
+
+.filler{
+  background-color: #333;
+}
+
