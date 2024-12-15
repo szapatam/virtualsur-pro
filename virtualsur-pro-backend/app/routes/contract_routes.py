@@ -365,7 +365,7 @@ def get_assigned_equipments(contract_id):
         return jsonify(result), 200
     except Exception as e:
         return jsonify({"message": "Error al obtener los equipamientos asignados.", "error": str(e)}), 500
-
+    
 
 #MODAL
 @contract_bp.route('/equipment/available', methods=['GET'])
